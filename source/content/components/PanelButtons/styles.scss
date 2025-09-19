@@ -1,0 +1,35 @@
+.buttons {
+  height: auto;
+}
+
+.button {
+  border: none;
+  outline: none;
+  box-sizing: content-box;
+  cursor: pointer;
+  margin-right: 8px;
+  float: left;
+  position: relative;
+
+  width: 36px;
+  height: 36px;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 32px;
+  opacity: 0.7;
+}
+
+.blue {
+  @extend .button;
+  background-image: url('images/blue-disabled.svg');
+}
+
+.blue:hover {
+  opacity: 1;
+}
+
+.blue.enabled {
+  background-image: url('images/blue-enabled.svg');
+  opacity: 1;
+}

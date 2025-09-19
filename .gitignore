@@ -1,0 +1,5 @@
+/.idea
+/build
+/releases
+/node_modules
+.env.local

@@ -1,0 +1,1 @@
+export const LASTFM_GET_INFO = 'LASTFM_GET_INFO';

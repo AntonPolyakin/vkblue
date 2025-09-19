@@ -1,0 +1,17 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+    <rect stroke='#305075' fill="#486991" stroke-width='0.5' x='10' y='5' width='80' height='90' rx='10' ry='10'/>
+    <g fill='none' stroke='#d7e2ec' stroke-width='6'>
+        <circle cx='50' cy='50' r='18'>
+            <animate attributeType="xml" attributeName="r" from="18" to="20" dur="0.5s" repeatCount="indefinite" />
+        </circle>
+        <circle cx='50' cy='50' r='30'>
+            <animate attributeType="xml" attributeName="r" from="30" to="32" dur="0.5s" repeatCount="indefinite" />
+        </circle>
+    </g>
+    <g fill='#d7e2ec'>
+        <circle cx='50' cy='50' r='8'>
+            <animate attributeType="xml" attributeName="r" from="8" to="9" dur="0.5s" repeatCount="indefinite" />
+        </circle>
+        <circle cx='77.5' cy='80' r='4'/>
+    </g>
+</svg>

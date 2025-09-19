@@ -1,0 +1,74 @@
+.wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 8px 17px 6px 6px;
+  box-sizing: border-box;
+
+  //&:after {
+  //  position: absolute;
+  //  content: '';
+  //  display: block;
+  //  top: 0;
+  //  right: 0;
+  //  width: 20px;
+  //  height: 100%;
+  //  outline: solid 1px #e7e8ec;
+  //  background-color: #fafbfc;
+  //  background-image: url('./images/visualizer.svg');
+  //  background-repeat: no-repeat;
+  //  background-size: 75% auto;
+  //  background-position: center;
+  //  transform: translateZ(0);
+  //}
+  .title {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    font-family: -apple-system,BlinkMacSystemFont,Roboto,Open Sans,Helvetica Neue,sans-serif;
+    opacity: 0.75;
+  }
+  .body {
+    width: 100%;
+    height: 33px;
+    box-sizing: border-box;
+  }
+}
+
+
+$curveCount: 8;
+
+.image {
+  width: 100%;
+  height: 100%;
+
+  svg {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.curve {
+  stroke-opacity: 0;
+  stroke: #507299;
+
+  path {
+    transform-origin: center 60px;
+  }
+
+  @for $i from 1 through $curveCount {
+    & path:nth-child(#{$i}) {
+      stroke-width: $i*3px;
+      animation: curve 6s linear $i*1.2s infinite;
+    }
+  }
+}
+
+@keyframes curve {
+  0% { transform: none; stroke-opacity:0; }
+  50% { transform: rotateX(360deg) scaleY(.8);
+    stroke-opacity: .4; }
+  70% { /* transform: skewY(-2deg); */ }
+  100% { transform: none; stroke-opacity:0;}
+}

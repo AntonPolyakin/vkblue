@@ -1,0 +1,44 @@
+{
+    "extName": {
+        "message": "VK Blue - EQ & Scrobbler for VK.com"
+    },
+    "extDescription": {
+        "message": "Extension to the standard vk.com player functionality. It adds EQ, Last.fm scrobbling, media keys support, artist's bio and lyrics"
+    },
+    "extDefaultTitle": {
+        "message": "VK Blue - EQ & Scrobbler for VK.com"
+    },
+    "creator_code_name": {
+        "message": "Ivan Hadaev",
+        "description": "Name of the creator"
+    },
+    "creator_code_link": {
+        "message": "https://vk.com/hadaev_ivan",
+        "description": "Link to creator's page"
+    },
+
+    "creator_design_name": {
+        "message": "Timothy Kozak",
+        "description": "Name of the creator"
+    },
+    "creator_design_link": {
+        "message": "https://vk.com/timothyk",
+        "description": "Link to creator's page"
+    },
+    "creator_media_name": {
+        "message": "Taras Bedenko",
+        "description": "Name of the designer"
+    },
+    "creator_media_link": {
+        "message": "https://vk.com/id30587638",
+        "description": "Link to designer's page"
+    },
+    "elements_design_name": {
+        "message": "Polina Ovsyanyk",
+        "description": "Name of the designer"
+    },
+    "elements_design_link": {
+        "message": "https://vk.com/id17100076",
+        "description": "Link to designer's page"
+    }
+}

@@ -1,0 +1,7 @@
+export const PLAY = 'PLAY';
+
+export const AUDIO__PLAY = 'AUDIO__PLAY';
+export const AUDIO__PAUSE = 'AUDIO__PAUSE';
+export const AUDIO__PLAYING = 'AUDIO__PLAYING';
+export const AUDIO__CLEAR_PLAYED_PERCENT = 'AUDIO__CLEAR_PLAYED_PERCENT';
+export const AUDIO__ADD_PLAYED_PERCENT = 'AUDIO__ADD_PLAYED_PERCENT';

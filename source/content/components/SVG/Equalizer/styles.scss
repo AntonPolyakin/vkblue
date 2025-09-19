@@ -1,0 +1,28 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  svg {
+    width: 100%;
+  }
+  &.disabled {
+    pointer-events: none;
+  }
+}
+
+.point {
+  cursor: pointer;
+  &.dragged, &:hover {
+    .circle-big {
+      r: 7;
+    }
+
+    .point-small {
+      fill: white;
+    }
+
+    transition: r, fill 0.5s;
+  }
+}

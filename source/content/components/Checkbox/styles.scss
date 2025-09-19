@@ -1,0 +1,53 @@
+@import '../../styles/constants';
+$height: 16px;
+$full_height: 18px;
+
+.checkbox-wrapper {
+  line-height: $full_height;
+  height: $full_height;
+  overflow: hidden;
+
+  .checkbox-input {
+    cursor: pointer;
+    box-sizing: border-box;
+    display: inline-block;
+    border: 1px solid #C1C9D1;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0 10px 0 0;
+    width: $height;
+    height: $height;
+    border-radius: 2px;
+    transition: all 0.25s;
+
+    &:hover {
+      background-color: #EBEDF2;
+    }
+  }
+
+  .checkbox-label {
+    cursor: pointer;
+    display: inline-block;
+    height: $full_height;
+    position: relative;
+    //top: 1px;
+    font-size: 11px;
+    font-family: $font_regular;
+    //color: black;
+    vertical-align: super;
+  }
+
+  &.checked {
+    .checkbox-input {
+      border: none;
+      background-color: #6786AB;
+      background-image: url('./images/checkbox.svg');
+      //box-shadow: 0 0 1px 0 #6685aa;
+      &:hover {
+        background-color: #7E98B8;
+        box-shadow: 0 0 1px 0 #7E98B8;
+      }
+    }
+  }
+}

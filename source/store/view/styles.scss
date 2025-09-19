@@ -1,0 +1,20 @@
+.displayed :global(.audio_friends_fixed) {
+    position: static !important;
+}
+
+.displayed :global(.audio_layer_container .audio_page_player_wrap.audio_page_player_wrap) {
+    border: none !important;
+}
+
+.displayed
+    :global(.content
+        .head_nav
+        .top_audio_layer_place
+        .audio_page_content_block_wrap
+        > .ui_scroll_overflow
+        > .ui_scroll_blocker
+        > .ui_scroll_outer),
+.displayed :global(.audio_page_content_block_wrap .ui_scroll_outer) {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}

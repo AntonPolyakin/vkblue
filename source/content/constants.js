@@ -1,0 +1,2 @@
+export const LOAD_STORE_FROM_STORAGE = 'LOAD_STORE_FROM_STORAGE';
+export const INIT_STORE = 'INIT_STORE';

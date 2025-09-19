@@ -1,0 +1,3 @@
+export const LASTFM_AUTH = 'LASTFM_AUTH';
+export const LASTFM_SCROBBLE = 'LASTFM_SCROBBLE';
+export const LASTFM_PLAYING_NOW = 'LASTFM_PLAY_NOW';

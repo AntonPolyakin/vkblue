@@ -1,0 +1,5 @@
+[development]
+chrome >= 30
+
+[production]
+chrome >= 30

@@ -1,0 +1,30 @@
+.wrapper {
+  height: 100%;
+  width: 100%;
+  padding: 0 17px 0 0;
+  box-sizing: border-box;
+
+  //&:before {
+  //  content: '';
+  //  display: block;
+  //  z-index: 1;
+  //  height: 100%;
+  //  width: 20px;
+  //  position: absolute;
+  //  top: 0;
+  //  right: 0;
+  //  outline: solid 1px #e7e8ec;
+  //  background-color: #fafbfc;
+  //  background-image: url('./images/info.svg');
+  //  background-repeat: no-repeat;
+  //  background-size: 75% auto;
+  //  background-position: center;
+  //  transform: translate3D(0,0,0);
+  //}
+
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}

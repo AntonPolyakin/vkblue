@@ -1,0 +1,166 @@
+$height: 180px;
+
+[class*="AudioPlayerBlockDefaultLayout-module__fixed"] .content {
+  display: none !important;
+}
+
+.content {
+  box-sizing: content-box;
+  height: $height;
+  display: flex;
+  padding: 0;
+  //background-color: #fcfcfc;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  overflow: hidden;
+
+  &.top-content {
+    width: 100%;
+  }
+
+  .player-wrap {
+    &.top-player-wrap {
+      width: 100%;
+    }
+
+    width: 100%;
+    float: left;
+  }
+
+  .main {
+    margin: 0;
+    float: left;
+    width: 70%;
+    height: 180px;
+    box-sizing: border-box;
+    //overflow-x: visible;
+    overflow: hidden;
+    border-right: solid 1px rgba(128, 128, 128, 0.25);
+
+    .main_enter {
+      opacity: 0.01;
+      transform: translate3d(100%, 0, 0) scale(0.1);
+    }
+    .main_enter_active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition: all 200ms ease-out;
+    }
+    .main_leave {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    .main_leave_active {
+      opacity: 0.01;
+      transform: translate3d(100%, 0, 0) scale(0.1);
+      transition: all 200ms ease-out;
+    }
+    .main_appear {
+      opacity: 0.01;
+      transform: translate3d(100%, 0, 0) scale(0.1);
+    }
+    .main_appear_active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition: all 200ms ease-out;
+    }
+
+    .main-container {
+      box-sizing: border-box;
+      height: 100%;
+      //background-color: white;
+      //border-radius: 2px;
+    }
+  }
+
+  .aside {
+    margin: 0;
+    float: left;
+    width: 30%;
+    height: $height;
+    max-height: $height;
+    box-sizing: border-box;
+    overflow: visible;
+
+    .aside_enter {
+      opacity: 0.01;
+      transform: translate3d(-100%, 0, 0);
+    }
+    .aside_enter_active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: all 200ms ease-out;
+    }
+    .aside_leave {
+      opacity: 0;
+      display: none;
+      //transform: translate3d(0, 0, 0);
+    }
+    .aside_leave_active {
+      opacity: 0;
+      display: none;
+      //transform: translate3d(-100%, 0, 0);
+      //transition: all 200ms ease-out;
+    }
+    .aside_appear {
+      opacity: 0.01;
+      transform: translate3d(-100%, 0, 0);
+    }
+    .aside_appear_active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: all 200ms ease-out;
+    }
+
+    .animated {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .component {
+      height: $height/3;
+      box-sizing: border-box;
+      padding: 0 1px 0 0;
+      display: flex;
+      align-items: center;
+
+      &.big {
+        height: $height/2;
+      }
+
+      &.disabled .container {
+        background: rgba(158, 158, 158, 0.1);
+        pointer-events: none;
+      }
+
+      .container {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+        padding: 0;
+        outline: solid 1px rgba(128, 128, 128, 0.25);
+        background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDMyIDMyIiBoZWlnaHQ9IjMycHgiIGlkPSLQodC70L7QuV8xIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMycHgiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPjxwYXRoIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTIxLjY5OCwxNS4yODZsLTkuMDAyLTguOTk5ICBjLTAuMzk1LTAuMzk0LTEuMDM1LTAuMzk0LTEuNDMxLDBjLTAuMzk1LDAuMzk0LTAuMzk1LDEuMDM0LDAsMS40MjhMMTkuNTUzLDE2bC04LjI4Nyw4LjI4NWMtMC4zOTUsMC4zOTQtMC4zOTUsMS4wMzQsMCwxLjQyOSAgYzAuMzk1LDAuMzk0LDEuMDM2LDAuMzk0LDEuNDMxLDBsOS4wMDItOC45OTlDMjIuMDg4LDE2LjMyNSwyMi4wODgsMTUuNjc1LDIxLjY5OCwxNS4yODZ6IiBmaWxsPSIjMTIxMzEzIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGlkPSJDaGV2cm9uX1JpZ2h0Ii8+PGcvPjxnLz48Zy8+PGcvPjxnLz48Zy8+PC9zdmc+') no-repeat transparent;
+        background-position: right 10px center;
+        background-size: 14px;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+          cursor: pointer;
+          left: 2px;
+          //background-position-x: 165px;
+        }
+      }
+
+    }
+  }
+
+  &:after {
+    content: '';
+    display: block;
+    height: 0;
+    clear: both;
+  }
+}

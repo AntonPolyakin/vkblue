@@ -1,0 +1,17 @@
+.lightbox_wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .lightbox {
+    background-color: white;
+    width: 640px;
+  }
+}

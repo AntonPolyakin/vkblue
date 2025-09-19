@@ -1,0 +1,34 @@
+{
+    "extends": ["tslint:recommended", "tslint-sonarts", "tslint-config-prettier", "tslint-plugin-prettier"],
+    "rules": {
+        "member-ordering": [
+            true,
+            {
+                "order": [
+                    "public-static-field",
+                    "public-instance-field",
+                    "public-constructor",
+                    "private-static-field",
+                    "private-instance-field",
+                    "private-constructor",
+                    "public-instance-method",
+                    "protected-instance-method",
+                    "private-instance-method"
+                ],
+                "alphabetize": true
+            }
+        ],
+        "object-literal-sort-keys": [true, "ignore-case"],
+        "max-line-length": [true, 120],
+        "indent": [true, "spaces", 4],
+        "curly": true,
+        "no-default-export": true,
+        "no-empty-interface": false,
+        "no-console": false,
+        "no-any": true,
+        "interface-name": [true, "never-prefix"]
+    },
+    "linterOptions": {
+        "exclude": ["node_modules/*", "extensions/*"]
+    }
+}

@@ -1,0 +1,28 @@
+.canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 14px;
+}
+
+.image-play, .image-pause {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+}
+
+.image-play {
+  background-image: url("./images/active.svg");
+}
+
+.image-pause {
+  background-image: url("./images/passive.svg");
+}

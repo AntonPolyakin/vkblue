@@ -1,0 +1,25 @@
+.wrapper {
+  cursor: pointer;
+  &.dragged, &:hover {
+    .circle-big {
+      r: 7;
+    }
+
+    .circle-small {
+      fill: white;
+    }
+
+    .tooltip {
+      display: block;
+      fill: white;
+      font-size: 10px;
+
+    }
+
+    transition: r, fill 0.5s;
+  }
+
+  .tooltip {
+    display: none;
+  }
+}

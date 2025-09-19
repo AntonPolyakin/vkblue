@@ -1,0 +1,1 @@
+export const EVENT_NAME = 'MEDIAKEYS: KEY_PRESSED';

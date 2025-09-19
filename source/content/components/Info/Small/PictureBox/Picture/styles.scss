@@ -1,0 +1,35 @@
+.wrapper_picture {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #edeef0;
+  position: relative;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+
+  .picture {
+    &[src=''] {
+      display: none;
+    }
+    display: block;
+    position: absolute;
+    width: auto;
+    height: 100%;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .empty_picture {
+    width: 100%;
+    height: 100%;
+    background-image: url("./images/placeholder.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
+  }
+}

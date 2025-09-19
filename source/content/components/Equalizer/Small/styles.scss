@@ -1,0 +1,92 @@
+.wrapper {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  padding: 6px 17px 0px 6px;
+  display: flex;
+  align-items: center;
+
+  .content {
+    &:after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+    .title {
+      display: block;
+      font-size: 12px;
+      font-weight: normal;
+      font-family: -apple-system, BlinkMacSystemFont, Roboto, Open Sans, Helvetica Neue, sans-serif;
+      opacity: 0.75;
+    }
+    .options {
+      float: left;
+      margin: 5px 0 0;
+      width: 73px;
+
+      > strong {
+        display: block;
+        margin: 0 0 2px;
+        font-size: 12px;
+        //font-weight: normal;
+        font-family: -apple-system, BlinkMacSystemFont, Roboto, Open Sans, Helvetica Neue, sans-serif;
+        opacity: 0.6;
+        text-transform: capitalize;
+      }
+      > span {
+        display: block;
+        font-size: 11px;
+        font-family: -apple-system, BlinkMacSystemFont, Roboto, Open Sans, Helvetica Neue, sans-serif;
+        color: #939393;
+      }
+    }
+    .eq {
+      position: relative;
+      overflow: hidden;
+      float: left;
+      width: 85px;
+      height: 30px;
+      margin: 10px 0 0 0;
+
+      &:after {
+        position: absolute;
+        content: '';
+        display: block;
+        top: 11px;
+        right: 0;
+        width: 100%;
+        height: 0;
+        border-bottom: dashed 1px #939393;
+        z-index: -1;
+        //background-color: #fafbfc;
+        //background-image: url('./images/equalizer.svg');
+        //background-repeat: no-repeat;
+        //background-size: 75% auto;
+        //background-position: center;
+        //transform: translate3D(0,0,0);
+      }
+      .chart {
+        display: block;
+        height: 80%;
+        width: 100%;
+        margin: 0;
+        //border: 1px solid rgba(87, 124, 161, 0.5);
+        //border-left: 1px solid rgba(87, 124, 161, 0.5);
+        padding: 0;
+
+        polyline {
+          fill: none;
+          stroke: rgba(87, 124, 161, 1);
+          stroke-width: 8
+        }
+
+        circle {
+          fill: rgba(87, 124, 161, 1);
+          r: 5;
+        }
+
+        color: #3482b9;
+      }
+    }
+  }
+}

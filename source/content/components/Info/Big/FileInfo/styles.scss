@@ -1,0 +1,79 @@
+@import '../../../../styles/constants';
+
+.file {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -25px;
+  height: 24px;
+  padding: 2px 7px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.5);
+  transition: all 0.5s ease;
+
+  .size {
+    //float: right;
+    line-height: 19px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: block;
+    font-family: $font_regular;
+    font-size: 11px;
+    font-weight: normal;
+    //color: #577ca1;
+    color: #fff;
+    padding: 0 0 0 3px;
+  }
+  .file-info {
+    float: left;
+    line-height: 19px;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: block;
+    font-family: $font_regular;
+    font-size: 11px;
+    //color: #577ca1;
+    color: #fff;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    em {
+      display: inline-block;
+      width: 34px;
+      height: 16px;
+      margin: 0 3px 0 0;
+      border-radius: 2px;
+      text-transform: lowercase;
+      text-align: center;
+      color: white;
+      line-height: 16px;
+      font-size: 10px;
+      font-style: normal;;
+      font-weight: normal;
+      font-family: $font_regular;
+      background: #577ca1;
+    }
+
+    &.high {
+      em {
+        background: #3fad46;
+        //opacity: 0.5;
+      }
+    }
+    &.medium {
+      em {
+        background: #5bc0de;
+      }
+    }
+    &.low {
+      em {
+        background: #ccc;
+        //opacity: 0.25;
+      }
+    }
+  }
+}
