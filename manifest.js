@@ -5,7 +5,8 @@ const manifest = {
     name: '__MSG_extName__',
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
-    version: '0.6.58',
+    version: '0.7.00',
+    version_name: '0.7.00 beta 0',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',
@@ -48,14 +49,17 @@ const manifest = {
         '*://www.startpage.com/*',
         '*://ws.audioscrobbler.com/*',
         '*://www.last.fm/*',
+        '*://searx.bndkt.io/*',
     ],
-    web_accessible_resources: ['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav'],
+    web_accessible_resources: ['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav', '*.webp'],
     content_security_policy: "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
 };
 
 if (ENV.BROWSER === 'chrome') {
     manifest.minimum_chrome_version = '40';
-    manifest.key = ENV.MANIFEST_KEY
+    if(ENV.MANIFEST_KEY){
+       manifest.key = ENV.MANIFEST_KEY 
+    }
 }
 
 module.exports = manifest;

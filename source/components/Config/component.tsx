@@ -12,6 +12,7 @@ import { getPresetsPresets } from '../../store/presets/selectors';
 import { Preset } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
+import { clampToRange } from '../../utils/utils';
 
 const _Checkbox: any = require('../../content/components/Checkbox/component').default;
 
@@ -305,7 +306,7 @@ const Config: React.FunctionComponent<ConfigProps> = ({
     const presetsHref =
         'data:text/json;charset=utf-8,' +
         encodeURIComponent(
-            JSON.stringify(presets.map(({ values, name, genres }) => ({ values, name, genres })))
+            JSON.stringify(presets.map(({ values, name, genres }) => ({ values: values.map(value=>clampToRange(+value || 0, [-1, 1])), name, genres })))
                 .replace(/,"/g, ',\n"')
                 .replace(/},/g, '\n},\n')
                 .replace(/{/g, '{\n')
@@ -509,7 +510,10 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                             reader.onload = onLoadFileEvent => {
                                                 try {
                                                     const result = onLoadFileEvent.target.result as string;
-                                                    const newPresets = JSON.parse(result) as Preset[];
+                                                    const newPresets = JSON.parse(result).map(preset => {
+                                                        preset.values = preset.values.map(value=>clampToRange(+value || 0, [-1, 1]))
+                                                        return preset;
+                                                    }) as Preset[];
 
                                                     if (presetsIsValid(newPresets)) {
                                                         setNewPresets(newPresets);

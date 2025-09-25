@@ -275,7 +275,7 @@ export const initEqualizer = (audio: HTMLAudioElement, config: EqualizerSettings
         const sendFrequencies = () => {
             if (analyserListeners.length) {
                 if (!mediaElementSource.mediaElement.paused) {
-                    analyserNode.getByteFrequencyData(analyserBuffer);
+                    analyserNode.getByteFrequencyData(analyserBuffer as Uint8Array<ArrayBuffer>);
 
                     smoothFrequencies = analyserBuffer;
                     smoothStep = 256;

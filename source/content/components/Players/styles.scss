@@ -8,10 +8,13 @@ $height: 180px;
   box-sizing: content-box;
   height: $height;
   display: flex;
+  margin: 0;
   padding: 0;
   //background-color: #fcfcfc;
   border-bottom: 1px solid rgba(128, 128, 128, 0.25);
   overflow: hidden;
+  z-index: -1;
+  position: relative;
 
   &.top-content {
     width: 100%;
@@ -22,7 +25,7 @@ $height: 180px;
       width: 100%;
     }
 
-    width: 100%;
+    width: 720px;
     float: left;
   }
 

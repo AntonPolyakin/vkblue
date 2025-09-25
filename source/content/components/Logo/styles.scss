@@ -5,7 +5,8 @@ $height: 180px;
 }
 
 .title {
-  margin-top: 48px;
+  margin: 0px;
+  padding-top: 2px;
   font-size: 50px;
   font-weight: 200;
   color: #fff;
@@ -14,23 +15,23 @@ $height: 180px;
 
 .wrapper  {
   position: relative;
-  background: url('./images/img.png') no-repeat center center #fff;
+  background: url('./images/ukraine-flag.webp') no-repeat center center #fff;
   height: $height;
   border-bottom: 1px solid rgba(231, 232, 236, 0.8);
   box-sizing: border-box;
-  padding: 32px 0px 0px;
   background-size: 100%;
   background-position: center;
+  display: flex;
+  align-items: center;
 
   .container {
-    overflow: hidden;
     box-sizing: content-box;
     display: flex;
-    margin: 6px 0 0 29px;
+    margin: 0px 0px 0px 30px;
     background-size: 100% 85%;
+    align-items: center;
 
     .icon_wrapper {
-      overflow: hidden;
       float: left;
       width: 102px;
       height: 102px;
@@ -52,9 +53,9 @@ $height: 180px;
       clear: both;
       overflow: hidden;
       text-align: center;
-      padding: 5px 0 5px 30px;
+      padding: 5px 0 5px 5px;
       position: relative;
-      bottom: 21px;
+      bottom: 0;
       //color: #939699;
       color: #fff;
 
@@ -84,13 +85,18 @@ $height: 180px;
     }
     .info_wrapper {
       float: left;
-      width: 211px;
+      width: 200px;
       height: 102px;
       overflow: hidden;
       padding: 24px 0 0 7px;
       box-sizing: border-box;
       //color: #393e42;
       color: #fff;
+      justify-content: center;
+      flex-direction: column;
+      display: flex;
+      padding: 0;
+      gap: 10px;
 
       h2 {
         margin: 0;
@@ -114,6 +120,11 @@ $height: 180px;
     padding: 5px 0;
     list-style: none;
     background: rgba(255, 255, 255, 0.15);
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 
     a {
       overflow: hidden;

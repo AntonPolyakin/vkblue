@@ -11,7 +11,8 @@
   justify-content: center;
 
   .lightbox {
-    background-color: white;
+    background-color: var(--vkui--color_background_modal);
+    color: var(--vkui--color_text_primary);
     width: 640px;
   }
 }

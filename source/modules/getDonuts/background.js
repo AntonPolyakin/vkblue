@@ -1,5 +1,5 @@
 import request from 'request';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import browser from 'webextension-polyfill';
 
 import { REQUEST_DONATS } from './utils';

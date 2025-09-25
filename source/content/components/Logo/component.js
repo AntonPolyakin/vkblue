@@ -1,13 +1,47 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import CSSModules from 'react-css-modules';
 import styles from './styles.scss';
 import browser from 'webextension-polyfill';
+import { setVkTooltip } from '../../../content/helpers/vk-tooltip';
 
 const manifest = browser.runtime.getManifest();
 
-const Component = function({ onOpenConfig, onHidePlayerView }) {
+const Component = function ({ onOpenConfig, onHidePlayerView }) {
+    const wrapperRef = useRef(null);
+
+    useEffect(() => {
+        if (!wrapperRef.current) return;
+
+
+        const links = wrapperRef.current.querySelectorAll('ul li a');
+
+        const tooltips = [
+            'Скрыть плеер',
+            'Настройки',
+            'Группа ВКонтакте',
+            'Написать отзыв',
+        ];
+
+        links.forEach((link, index) => {
+            let text = links[index].textContent || '';
+            if (text) {
+                setVkTooltip({
+                    container: link,
+                    text: text,
+                    fromInline: true,
+                    tooltipOptions:{
+                        needLeft: true,
+                        dir: 'right',
+                        black: true,
+                        shift:[50, -15],
+                    }
+                });
+            }
+        });
+    }, []);
+
     return (
-        <div styleName="wrapper">
+        <div styleName="wrapper" ref={wrapperRef}>
             <div styleName="container">
                 <div styleName="icon_wrapper" />
                 <div styleName="info_wrapper">

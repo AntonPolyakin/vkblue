@@ -1,5 +1,5 @@
 import _request from 'request';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import get from 'lodash/get';
 
 import { storageGet, storageSet } from '../../source/modules/LocalStorage/storage';
@@ -52,6 +52,11 @@ on(LASTFM_GET_INFO, async request => {
                 return;
             }
 
+            console.log('--- DEBUG cheerio ---');
+            console.log('typeof cheerio:', typeof cheerio);
+            console.dir(cheerio); // (покажет, что реально в переменной)
+            console.log('cheerio.load:', cheerio && cheerio.load);
+            console.log('cheerio.default?.load:', cheerio && cheerio.default && cheerio.default.load);
             const $ = cheerio.load(body);
             const image = $('.header-new-background-image');
             const content = image ? image.attr('content') : null;

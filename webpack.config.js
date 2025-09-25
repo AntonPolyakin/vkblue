@@ -1,7 +1,9 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WrapperPlugin = require('wrapper-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const manifest = require('./manifest');
+const webpack = require('webpack');
 
 const config = {
     target: 'web',
@@ -21,7 +23,10 @@ const config = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
+                use: {
+                    loader: 'ts-loader',
+                    options: { transpileOnly: true }
+                },
                 exclude: /node_modules/,
             },
             {
@@ -34,7 +39,7 @@ const config = {
             {
                 test: /\.css$/,
                 exclude: /node_modules/,
-                loader: [
+                use: [
                     MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
@@ -47,7 +52,7 @@ const config = {
             {
                 test: /\.scss$/,
                 exclude: /node_modules/,
-                loader: [
+                use: [
                     MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
@@ -75,7 +80,7 @@ const config = {
                 exclude: /sources/,
             },
             {
-                test: /\.gif|\.png$/,
+                test: /\.gif|\.png|\.webp$/,
                 use: [
                     {
                         loader: 'url-loader',
@@ -89,14 +94,25 @@ const config = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.json'],
+        fallback: {
+            "net": false,
+            "tls": false,
+            "fs": false,
+            "url": require.resolve('url'),
+            "crypto": require.resolve('crypto-browserify'),
+            "stream": require.resolve('stream-browserify'),
+            "http": require.resolve('stream-http'),
+            "https": require.resolve('https-browserify'),
+            "zlib": require.resolve('browserify-zlib'),
+            "path": require.resolve('path-browserify'),
+            "querystring": require.resolve("querystring-es3"),
+            "process": require.resolve("process/browser"),
+            "buffer": require.resolve("buffer/")
+        },
     },
     stats: 'errors-only',
     node: {
         global: false,
-        net: 'empty',
-        tls: 'empty',
-        dns: 'empty',
-        fs: 'empty',
     },
     plugins: [
         new WrapperPlugin({
@@ -127,6 +143,11 @@ const config = {
             { from: './source/config/icons' },
             { from: './sounds', to: 'sounds/' },
         ]),
+        new ForkTsCheckerWebpackPlugin(),
+        new webpack.ProvidePlugin({
+            process: "process/browser",
+            Buffer: ["buffer", "Buffer"]
+            })
     ],
 };
 

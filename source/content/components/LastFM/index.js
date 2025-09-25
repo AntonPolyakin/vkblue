@@ -36,7 +36,10 @@ class LastFM extends Component {
 
         const lastFMClassnames = ClassNames('enabled', { loading: processing, done: success });
 
-        const disabledView = <a styleName="disabled" onClick={this.onClickLastFM} />;
+        const disabledView = (
+            <a styleName="disabled" onClick={this.onClickLastFM}>
+            </a>
+        );
         const enabledView = (
             <a styleName={lastFMClassnames} onClick={this.onClickLastFM}>
                 <span styleName="default">Активен</span>
