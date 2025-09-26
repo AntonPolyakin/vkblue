@@ -6,7 +6,7 @@ const manifest = {
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
     version: '0.7.00',
-    version_name: '0.7.00 beta 0',
+    version_name: '0.7.00 beta 1',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',
