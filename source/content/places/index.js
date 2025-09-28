@@ -31,8 +31,8 @@ const UNMOUNT_STABILIZE_MS = 250;
 const OBSERVERS = [
   {
     name: 'header-visualizer',
-    hostSelector: '#top_audio_player', // host anchor presence means header area exists
-    targetSelector: '#top_audio_player', // target to watch for additions
+    hostSelector: '#web_spa_top_audio_player', // host anchor presence means header area exists
+    targetSelector: '#web_spa_top_audio_player', // target to watch for additions
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
@@ -45,7 +45,7 @@ const OBSERVERS = [
     createContainer(node) {
       const parent = node.matches(this.targetSelector) ? node : node.querySelector(this.targetSelector);
       if (!parent) return null;
-      const container = document.createElement('div');
+      const container = document.createElement('li');
       container.onclick = function () {
         const l = document.getElementById('l_aud');
         if (l && l.firstChild) l.firstChild.click();

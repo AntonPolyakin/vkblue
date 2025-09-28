@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 
 import { REQUEST_LYRICS, STORE_NAME } from './utils';
+import { storageGet } from '../LocalStorage/storage';
 
 let callbacks = [
     (...args) => {
@@ -32,7 +33,11 @@ export const requestLyrics = data => {
     browser.runtime.sendMessage({ type: REQUEST_LYRICS, data });
 };
 
-export const getLyricsStore = callback =>
-    browser.storage.local
-        .get(STORE_NAME)
-        .then(({ [STORE_NAME]: savedStore }) => callback(savedStore ? savedStore : {}));
+export const getLyricsStore = callback => {
+    return storageGet(STORE_NAME).then((result) => {
+        const savedStore = result?.[STORE_NAME];
+        return callback(savedStore ? savedStore : {})
+    })
+}
+
+

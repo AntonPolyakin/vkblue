@@ -1,21 +1,22 @@
-import superagent from 'superagent';
+export default async function request({ method, data }) {
+  const payload = { ...data, format: 'json' };
 
-export default function request({ method, data }) {
-    return new Promise((resolve, reject) => {
-        const payload = Object.assign({}, data, {
-            format: 'json',
-        });
+  const url = 'https://ws.audioscrobbler.com/2.0/';
 
-        superagent(method, 'http://ws.audioscrobbler.com/2.0/')
-            .type('form')
-            .query(method === 'GET' ? payload : {})
-            .send(method === 'POST' ? payload : null)
-            .end((err, response) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(response.body);
-                }
-            });
-    });
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  };
+
+  if (method === 'GET') {
+    const qs = new URLSearchParams(payload).toString();
+    const res = await fetch(`${url}?${qs}`, options);
+    return res.json();
+  } else if (method === 'POST') {
+    options.body = new URLSearchParams(payload);
+    const res = await fetch(url, options);
+    return res.json();
+  }
 }

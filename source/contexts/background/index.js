@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import 'webextension-polyfill/dist/browser-polyfill.min.js';
+import { storageClear } from '../../modules/LocalStorage/storage';
 
 (async () => {
   await import('../../modules/reloadAllTabs/background');
@@ -49,7 +50,7 @@ import 'webextension-polyfill/dist/browser-polyfill.min.js';
     browser.contextMenus.onClicked.addListener(async ({ menuItemId }) => {
         if (menuItemId === 'reset_app') {
             localStorage.clear();
-            await browser.storage.local.clear();
+            await storageClear();
             await browser.runtime.reload();
         }
     });
