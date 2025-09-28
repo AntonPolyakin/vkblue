@@ -1,4 +1,5 @@
-import { browser, Runtime } from 'webextension-polyfill-ts';
+import browser from 'webextension-polyfill';
+import type { Runtime } from 'webextension-polyfill';
 import { PORT_NAME } from './constants';
 import { Callback, Callbacks, Message } from './types';
 

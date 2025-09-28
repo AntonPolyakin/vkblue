@@ -355,6 +355,10 @@ https://toughengineer.github.io/demo/slider-styler*/
             #818c99;
         }
       }
+
+      &:disabled,&[disabled]{
+        user-select: none;
+      }
     }
   }
 

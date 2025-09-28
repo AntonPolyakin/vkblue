@@ -1,5 +1,5 @@
 import { PORT_NAME } from './constants';
-import { Runtime } from 'webextension-polyfill-ts';
+import type { Runtime } from 'webextension-polyfill';
 
 export type Message = {
     port: typeof PORT_NAME;

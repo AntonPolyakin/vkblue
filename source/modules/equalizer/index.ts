@@ -1,4 +1,4 @@
-import { browser } from 'webextension-polyfill-ts';
+import browser from 'webextension-polyfill';
 import { FFT_SIZE, reduce } from './reduce';
 
 let audioContext: AudioContext;
@@ -461,7 +461,7 @@ export const updateEffectName = (effect: EqualizerConvolverEffectName) => {
     }
 
     const request = new XMLHttpRequest();
-    const sound = browser.extension.getURL(`sounds/${effect}.wav`);
+    const sound = browser.runtime.getURL(`sounds/${effect}.wav`);
     request.open('GET', sound, true);
     request.responseType = 'arraybuffer';
     request.onload = () => {

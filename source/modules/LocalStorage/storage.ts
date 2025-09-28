@@ -1,4 +1,4 @@
-import { browser } from 'webextension-polyfill-ts';
+import browser from 'webextension-polyfill';
 
 export const storageGet = (key: string) =>
     browser.storage.local.get(key).then(response => (typeof response === 'object' ? response[key] : null));

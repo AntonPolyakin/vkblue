@@ -125,9 +125,6 @@ importers:
       webextension-polyfill:
         specifier: ^0.5.0
         version: 0.5.0
-      webextension-polyfill-ts:
-        specifier: ^0.10.0
-        version: 0.10.0
       why-did-you-update:
         specifier: ^0.1.1
         version: 0.1.1(react@16.14.0)
@@ -174,6 +171,9 @@ importers:
       '@types/redux-logger':
         specifier: ^3.0.7
         version: 3.0.13
+      '@types/webextension-polyfill':
+        specifier: ^0.12.3
+        version: 0.12.3
       babel-eslint:
         specifier: ^10.0.3
         version: 10.1.0(eslint@4.19.1)
@@ -195,6 +195,9 @@ importers:
       dotenv:
         specifier: ^17.2.2
         version: 17.2.2
+      dotenv-webpack:
+        specifier: ^8.1.1
+        version: 8.1.1(webpack@5.101.3)
       eslint:
         specifier: ^4.11.0
         version: 4.19.1
@@ -1243,6 +1246,9 @@ packages:
   '@types/uglify-js@3.17.5':
     resolution: {integrity: sha512-TU+fZFBTBcXj/GpDpDaBmgWk/gn96kMZ+uocaFUlV2f8a6WdMzzI44QBCmGcCiYR0Y6ZlNRiyUyKKt5nl/lbzQ==}
 
+  '@types/webextension-polyfill@0.12.3':
+    resolution: {integrity: sha512-F58aDVSeN/MjUGazXo/cPsmR76EvqQhQ1v4x23hFjUX0cfAJYE+JBWwiOGW36/VJGGxoH74sVlRIF3z7SJCKyg==}
+
   '@types/webpack-sources@3.2.3':
     resolution: {integrity: sha512-4nZOdMwSPHZ4pTEZzSp0AsTM4K7Qmu40UKW4tJDiOVs20UzYF9l+qUe4s0ftfN0pin06n+5cWWDJXH+sbhAiDw==}
 
@@ -2177,9 +2183,22 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
+  dotenv-defaults@2.0.2:
+    resolution: {integrity: sha512-iOIzovWfsUHU91L5i8bJce3NYK5JXeAwH50Jh6+ARUdLiiGlYWfGw6UkzsYqaXZH/hjE/eCd/PlfM/qqyK0AMg==}
+
+  dotenv-webpack@8.1.1:
+    resolution: {integrity: sha512-+TY/AJ2k9bU2EML3mxgLmaAvEcqs1Wbv6deCIUSI3eW3Xeo8LBQumYib6puyaSwbjC9JCzg/y5Pwjd/lePX04w==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      webpack: ^4 || ^5
+
   dotenv@17.2.2:
     resolution: {integrity: sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q==}
     engines: {node: '>=12'}
+
+  dotenv@8.6.0:
+    resolution: {integrity: sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==}
+    engines: {node: '>=10'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -4809,13 +4828,6 @@ packages:
     resolution: {integrity: sha512-c5EGNOiyxxV5qmTtAB7rbiXxi1ooX1pQKMLX/MIabJjRA0SJBQOjKF+KSVfHkr9U1cADPon0mRiVe/riyaiDUA==}
     engines: {node: '>=10.13.0'}
 
-  webextension-polyfill-ts@0.10.0:
-    resolution: {integrity: sha512-nNM+NRLU74shte+UZpgJdsgBzcp7pGJRY1u+79Ij1mBtWCk8LCzU8dhI7QHSF1wIGKtWpcRYw+UEjQmBdzt9eQ==}
-    deprecated: This project has moved to @types/webextension-polyfill
-
-  webextension-polyfill@0.4.0:
-    resolution: {integrity: sha512-oreMp+EoAo1pzRMigx4jB5jInIpx6NTCySPSjGyLLee/dCIPiRqowCEfbFP8o20wz9SOtNwSsfkaJ9D/tRgpag==}
-
   webextension-polyfill@0.5.0:
     resolution: {integrity: sha512-aFrl38x43t1bTboX/paCT8I97+idzX/TY0+fuM52hrIkCpYfROEF9kSn0BXuEIi3J9LTYt2ZZKkhx9NB1qF3nA==}
 
@@ -6202,6 +6214,8 @@ snapshots:
     dependencies:
       source-map: 0.6.1
 
+  '@types/webextension-polyfill@0.12.3': {}
+
   '@types/webpack-sources@3.2.3':
     dependencies:
       '@types/node': 12.20.55
@@ -7360,7 +7374,18 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
+  dotenv-defaults@2.0.2:
+    dependencies:
+      dotenv: 8.6.0
+
+  dotenv-webpack@8.1.1(webpack@5.101.3):
+    dependencies:
+      dotenv-defaults: 2.0.2
+      webpack: 5.101.3(webpack-cli@6.0.1)
+
   dotenv@17.2.2: {}
+
+  dotenv@8.6.0: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -10508,12 +10533,6 @@ snapshots:
     dependencies:
       glob-to-regexp: 0.4.1
       graceful-fs: 4.2.11
-
-  webextension-polyfill-ts@0.10.0:
-    dependencies:
-      webextension-polyfill: 0.4.0
-
-  webextension-polyfill@0.4.0: {}
 
   webextension-polyfill@0.5.0: {}
 
