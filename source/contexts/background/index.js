@@ -3,27 +3,31 @@ import 'webextension-polyfill/dist/browser-polyfill.min.js';
 import { storageClear } from '../../modules/LocalStorage/storage';
 
 (async () => {
-  await import('../../modules/reloadAllTabs/background');
-  await import('../../modules/resetApp/background');
-  await import('../../modules/getDonuts/background');
-  await import('../../services/MediaKeys/background');
-  await import('../../../modules/LastFMInfo/background');
-  await import('../../../modules/LastFMScrobbler/background');
-  await import('../../modules/Lyrics/background');
+    await import('../../modules/reloadAllTabs/background');
+    await import('../../modules/resetApp/background');
+    await import('../../modules/getDonuts/background');
+    await import('../../services/MediaKeys/background');
+    await import('../../../modules/LastFMInfo/background');
+    await import('../../../modules/LastFMScrobbler/background');
+    await import('../../modules/Lyrics/background');
 
-  await import('./analytics');
+    await import('./analytics');
 
     (browser.browserAction || browser.action).onClicked.addListener(() => {
         browser.tabs.create({ url: 'https://vk.com/audios0000' });
     });
 
-    // browser.tabs.query({ url: '*://vk.com/*' }).then(function(tabs) {
-    //     tabs.forEach(function(tab) {
-    //         browser.tabs.reload(tab.id);
-    //     });
-    // });
+    chrome.runtime.onInstalled.addListener((details) => {
+        if (details.reason === 'update') {
+            chrome.tabs.query({ url: '*://vk.com/*' }, (tabs) => {
+                for (const tab of tabs) {
+                    if (tab.id != null) chrome.tabs.reload(tab.id);
+                }
+            });
+        }
+    });
 
-    browser.runtime.onInstalled.addListener(function({ reason, previousVersion }) {
+    browser.runtime.onInstalled.addListener(function ({ reason, previousVersion }) {
         if (reason === 'install') {
             browser.tabs.create({ url: 'https://vk.com/audios0000' });
             console.log('Blue. Extension installed. Storage cleared.');
