@@ -78,7 +78,7 @@ const manifest = Object.assign({
 if (process.env.BROWSER === 'chrome') {
     manifest.minimum_chrome_version = manifestVersion == 2 ? '40' : '88';
     if (process.env.MANIFEST_KEY) {
-        manifest.key = ENV.MANIFEST_KEY
+        manifest.key = process.env.MANIFEST_KEY
     }
 }
 
