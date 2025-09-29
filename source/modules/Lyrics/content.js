@@ -34,8 +34,7 @@ export const requestLyrics = data => {
 };
 
 export const getLyricsStore = callback => {
-    return storageGet(STORE_NAME).then((result) => {
-        const savedStore = result?.[STORE_NAME];
+    return storageGet(STORE_NAME).then((savedStore) => {
         return callback(savedStore ? savedStore : {})
     })
 }
