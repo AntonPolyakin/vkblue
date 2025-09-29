@@ -1,4 +1,4 @@
-import { browser } from 'webextension-polyfill-ts';
+import browser from 'webextension-polyfill';
 import { PORT_NAME } from './constants';
 import { Message } from './types';
 

@@ -1,22 +1,29 @@
 {
-    "compilerOptions": {
-        "module": "ESNext",
-        "target": "ESNext",
-        "lib": ["ESNext", "DOM"],
-        "sourceMap": true,
-        "allowJs": true,
-        "jsx": "react",
-        "moduleResolution": "node",
-        "noUnusedLocals": true,
-        "noImplicitAny": true,
-        "noImplicitUseStrict": true,
-        "checkJs": false,
-        "pretty": true,
-        "typeRoots": ["./node_modules/@types"],
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "resolveJsonModule": true
-    },
-    "include": ["**/*.ts", "**/*.tsx"],
-    "exclude": ["./node_modules", "./extensions"]
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "sourceMap": true,
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noImplicitAny": false,
+    "checkJs": false,
+    "pretty": true,
+    // "typeRoots": [
+    //   "./node_modules/@types",
+    //   "./node_modules/.pnpm/*/node_modules/@types"
+    // ],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "skipLibCheck": true,
+    "noEmit": true,      
+    "rootDir": ".",       
+    "outDir": "./build_ts"
+  },
+  "include": ["source/**/*", "modules/**/*", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "extensions", "build", "dist", "build_ts"]
 }

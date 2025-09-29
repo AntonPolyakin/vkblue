@@ -34,7 +34,7 @@ if (process.env.NODE_ENV !== 'production') {
     //@ts-ignore
     const logger = createLogger({ collapsed: true });
 
-    middleware.push(logger);
+    middleware.push(logger as Middleware<{}, any, any>);
 }
 
 export const store: Store<GlobalStore> = createStore(rootReducer, applyMiddleware(...middleware));

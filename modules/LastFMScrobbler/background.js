@@ -5,6 +5,7 @@ import getSession from './api/get-session';
 import scrobble from './api/scrobble';
 import { on } from '../../source/modules/Port/background';
 import { playingNow } from './api/playingNow';
+import { storageGet, storageSet, storageRemove } from '../../source/modules/LocalStorage/storage';
 
 const LASTFM_USER_NAME = 'LASTFM_USER_NAME';
 const LASTFM_SESSION_KEY = 'LASTFM_SESSION_KEY';
@@ -16,13 +17,14 @@ const getSessionKey = async () => {
         const token = await getUserToken();
         const { session } = await getSession(token);
 
-        localStorage[LASTFM_USER_NAME] = session.name;
-        localStorage[LASTFM_SESSION_KEY] = session.key;
+        await storageSet({
+            LASTFM_USER_NAME:session.name,
+            LASTFM_SESSION_KEY: session.key,
+        });
 
         sessionKey = session.key;
     } catch (response) {
-        localStorage[LASTFM_USER_NAME] = '';
-        localStorage[LASTFM_SESSION_KEY] = '';
+        await storageRemove([LASTFM_USER_NAME, LASTFM_SESSION_KEY])
 
         console.error(response);
     }
@@ -31,7 +33,7 @@ const getSessionKey = async () => {
 };
 
 on(LASTFM_AUTH, async () => {
-    let sessionKey = localStorage[LASTFM_SESSION_KEY];
+    let sessionKey = await storageGet(LASTFM_SESSION_KEY);
 
     sessionKey = sessionKey ? sessionKey : await getSessionKey();
 
@@ -39,7 +41,7 @@ on(LASTFM_AUTH, async () => {
 });
 
 on(LASTFM_SCROBBLE, async data => {
-    let sessionKey = localStorage[LASTFM_SESSION_KEY];
+    let sessionKey = await storageGet(LASTFM_SESSION_KEY);
 
     if (!sessionKey) {
         return '';
@@ -69,7 +71,7 @@ on(LASTFM_SCROBBLE, async data => {
 });
 
 on(LASTFM_PLAYING_NOW, async data => {
-    let sessionKey = localStorage[LASTFM_SESSION_KEY];
+    let sessionKey = await storageGet(LASTFM_SESSION_KEY);
 
     if (!sessionKey) {
         return '';

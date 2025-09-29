@@ -1,15 +1,15 @@
-const trim = require('lodash/trim');
-const unescape = require('lodash/unescape');
-const deburr = require('lodash/deburr');
+import trim from 'lodash/trim';
+import unescape from 'lodash/unescape';
+import deburr from 'lodash/deburr';
 
-const NODE_DECODER = window.document.createElement('span');
+const decodeHtml = (html: string): string => {
+  return html.replace(/&[#A-Za-z0-9]+;/g, match => unescape(match));
+};
 
 export const fixString: (source: string) => string = source => {
     let result: string;
 
-    NODE_DECODER.innerHTML = source;
-    result = NODE_DECODER.innerText;
-    result = unescape(result);
+    result = decodeHtml(source);
     result = deburr(result);
     result = result
         .replace(/(\s)+/g, ' ')

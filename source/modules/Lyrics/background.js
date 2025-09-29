@@ -1,11 +1,12 @@
-import request from 'request';
-import cheerio from 'cheerio';
+
+import * as cheerio from 'cheerio';
 import trim from 'lodash/trim';
 import browser from 'webextension-polyfill';
 import Fuse from 'fuse.js';
 
 import { REQUEST_LYRICS, STORE_NAME } from './utils';
 import { createArtistAndTitleKey } from '../keyCreators/createArtistAndTitleKey';
+import { storageGet, storageSet } from '../LocalStorage/storage';
 
 const cheerioObjectToText = cheerioObject => {
     cheerioObject.find('p, div, section').append('<br/>');
@@ -61,14 +62,16 @@ const SITES = [
         url: 'genius.com',
         regExp: /^https?:\/\/(?:rap\.|rock\.|pop\.)?(?:rap)?genius\.com\/(?:[^\/]+-lyrics\/?|\d+)/,
         getLyrics: $ => {
+            $('[class^="Lyrics__Container"]').find('[class^="LyricsHeader__Container"]').remove();
             return cheerioObjectToText($('[class^="Lyrics__Container"], .lyrics'));
         },
     },
 ];
 
 const findLinks = (cheerioLinks, artist, title) => {
+    const $ = cheerio.load('');
     const list = Array.from(cheerioLinks).map(link => {
-        const text = cheerio(link).text();
+        const text = $(link).text();
         const href = link.attribs.href;
 
         return { text, href };
@@ -87,16 +90,15 @@ const findLinks = (cheerioLinks, artist, title) => {
 
 const fetchLyrics = async url => {
     const getLyrics = SITES.find(site => url.includes(site.url)).getLyrics;
-    return new Promise(resolve =>
-        request(url, function(error, response, body) {
-            if (error) {
-                resolve(null);
-                return;
-            }
+    return new Promise(async resolve => {
+        try {
+            const res = await fetch(url);
+            const body = await res.text();
 
             const $ = cheerio.load(body, {
                 normalizeWhitespace: true,
             });
+
             const lyrics = getLyrics($);
 
             if (lyrics) {
@@ -104,12 +106,16 @@ const fetchLyrics = async url => {
             } else {
                 resolve(null);
             }
-        }),
-    );
+        } catch (error) {
+            resolve(null);
+        }
+
+    });
 };
 
 const SEARCH_ENGINES = [
     {
+        id: 'xo',//bad request
         buildUrl({ artist, title }) {
             const searchUrl = 'https://xo.wtf/search?q=';
             return (
@@ -128,6 +134,7 @@ const SEARCH_ENGINES = [
         },
     },
     {
+        id: 'startpage',//captcha
         buildUrl({ artist, title }) {
             const fixedTitle = title.split(' ').join('+');
             const fixedArtist = artist.split(' ').join('+');
@@ -145,6 +152,7 @@ const SEARCH_ENGINES = [
         },
     },
     {
+        id: 'ask',//bad request
         buildUrl({ artist, title }) {
             const searchUrl = 'https://uk.ask.com/web?q=';
             return (
@@ -160,6 +168,7 @@ const SEARCH_ENGINES = [
         },
     },
     {
+        id: 'bing',//captcha
         buildUrl({ artist, title }) {
             const searchUrl = 'https://www.bing.com/search?q=';
             return (
@@ -176,6 +185,7 @@ const SEARCH_ENGINES = [
         },
     },
     {
+        id: 'duckduckgo',//captcha
         buildUrl({ artist, title }) {
             const searchUrl = 'https://duckduckgo.com/html?q=';
             return (
@@ -191,12 +201,40 @@ const SEARCH_ENGINES = [
             return findLinks(links, artist, title);
         },
     },
+    {
+        id: 'searx',
+        buildRequest({ artist, title }) {
+            const query = `${title} ${artist} (${SITES.map(site => `site:${site.url}`).join(' OR ')})`;
+            return {
+                url: "https://searx.bndkt.io/search",
+                method: "POST",
+                headers: {
+                    "content-type": "application/x-www-form-urlencoded",
+                    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+                },
+                body: `q=${encodeURIComponent(query)}&category_general=1&language=all&safesearch=0&theme=simple`
+            };
+        },
+        getUrl({ artist, title, body }) {
+            const $ = cheerio.load(body);
+            const results = $('#main_results');
+            const links = results.find('.result a.url_header');
+            return findLinks(links, artist, title);
+        }
+    }
 ];
+
+let getSearchEngines = (ids) => {
+    return ids ? SEARCH_ENGINES.filter(item => ids.includes(item.id)) : [];
+};
 
 const store = {};
 
-browser.storage.local.get(STORE_NAME).then(({ [STORE_NAME]: savedStore }) => {
-    Object.assign(store, savedStore ? savedStore : {});
+storageGet(STORE_NAME).then((result) => {
+    const savedStore = result?.[STORE_NAME];
+    if (savedStore) {
+        Object.assign(store, savedStore);
+    }
 });
 
 browser.runtime.onMessage.addListener(async message => {
@@ -211,15 +249,22 @@ browser.runtime.onMessage.addListener(async message => {
             store[key] = undefined;
         }
 
-        for (const engine of SEARCH_ENGINES) {
-            lyrics = await new Promise(resolve =>
-                request(engine.buildUrl(data), async function(error, response, body) {
-                    if (error) {
-                        return resolve(null);
-                    }
+        let engines = getSearchEngines(['searx']);
+
+        for (const engine of engines) {
+            lyrics = await new Promise(async resolve => {
+                const reqOptions = engine.buildRequest ? engine.buildRequest(data) : { url: engine.buildUrl(data) };
+
+                try {
+                    const res = await fetch(reqOptions.url, {
+                        method: reqOptions.method || 'GET',
+                        headers: reqOptions.headers,
+                        body: reqOptions.body,
+                    });
+
+                    const body = await res.text();
 
                     const urls = engine.getUrl({ artist: data.artist, title: data.title, body });
-
                     if (urls.length === 0) {
                         return resolve(null);
                     }
@@ -232,21 +277,23 @@ browser.runtime.onMessage.addListener(async message => {
                     }
 
                     return resolve(null);
-                }),
-            );
+                } catch (error) {
+                    return resolve(null);
+                }
 
-            if (lyrics) {
-                break;
-            }
+            });
+            if (lyrics) break;
         }
+
 
         if (lyrics) {
             lyrics = trim(lyrics);
             store[key] = lyrics;
-        } else {
+        }else {
             store[key] = null;
         }
 
-        browser.storage.local.set({ [STORE_NAME]: store });
+        storageSet({ [STORE_NAME]: store });
+
     }
 });

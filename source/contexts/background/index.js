@@ -1,17 +1,19 @@
 import browser from 'webextension-polyfill';
-
-import '../../modules/reloadAllTabs/background';
-import '../../modules/resetApp/background';
-import '../../modules/getDonuts/background';
-import '../../services/MediaKeys/background';
-import '../../../modules/LastFMInfo/background';
-import '../../../modules/LastFMScrobbler/background';
-import '../../modules/Lyrics/background';
-
-import './analytics';
+import 'webextension-polyfill/dist/browser-polyfill.min.js';
+import { storageClear } from '../../modules/LocalStorage/storage';
 
 (async () => {
-    browser.browserAction.onClicked.addListener(function callback() {
+  await import('../../modules/reloadAllTabs/background');
+  await import('../../modules/resetApp/background');
+  await import('../../modules/getDonuts/background');
+  await import('../../services/MediaKeys/background');
+  await import('../../../modules/LastFMInfo/background');
+  await import('../../../modules/LastFMScrobbler/background');
+  await import('../../modules/Lyrics/background');
+
+  await import('./analytics');
+
+    (browser.browserAction || browser.action).onClicked.addListener(() => {
         browser.tabs.create({ url: 'https://vk.com/audios0000' });
     });
 
@@ -48,7 +50,7 @@ import './analytics';
     browser.contextMenus.onClicked.addListener(async ({ menuItemId }) => {
         if (menuItemId === 'reset_app') {
             localStorage.clear();
-            await browser.storage.local.clear();
+            await storageClear();
             await browser.runtime.reload();
         }
     });

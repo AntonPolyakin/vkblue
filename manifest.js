@@ -1,21 +1,48 @@
-const ENV = require('./env');
-
-const manifest = {
-    manifest_version: 2,
+const manifestVersion = +process.env.MANIFEST_VERSION;
+const permissions = [
+    'tabs',
+    'storage',
+    'unlimitedStorage',
+    'identity',
+    'contextMenus',
+];
+const hostPermissions = [
+    '*://vk.com/*',
+    '*://m.vk.com/*',
+    '*://www.gl5.ru/*',
+    '*://www.megalyrics.ru/*',
+    '*://megalyrics.ru/*',
+    '*://genius.com/*',
+    '*://lyricshare.net/*',
+    '*://uk.ask.com/*',
+    '*://www.bing.com/*',
+    '*://duckduckgo.com/*',
+    '*://xo.wtf/*',
+    '*://www.startpage.com/*',
+    '*://ws.audioscrobbler.com/*',
+    '*://www.last.fm/*',
+    '*://searx.bndkt.io/*',
+];
+const resources = ['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav', '*.webp', "page.js"];
+const manifest = Object.assign({
+    manifest_version: manifestVersion,
     name: '__MSG_extName__',
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
-    version: '0.6.58',
+    version: '0.7.00',
+    version_name: '0.7.00 beta 3',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',
     icons: {
         '128': 'icon-128.png',
     },
-    background: {
-        scripts: ['background.js'],
+    background: manifestVersion == 2 ? {
+        scripts: ['background.js']
+    } : {
+        service_worker: "serviceWorker.js"
     },
-    browser_action: {
+    [manifestVersion == 2 ? 'browser_action' : 'action']: {
         default_icon: 'icon-128.png',
         default_title: '__MSG_extDefaultTitle__',
     },
@@ -24,38 +51,35 @@ const manifest = {
             run_at: 'document_start',
             matches: ['*://vk.com/*'],
             css: ['content.css'],
-            js: ['page.js', 'content.js'],
+            js: ['inject.js', 'content.js'],
         },
     ],
-    permissions: [
-        'tabs',
-        'storage',
-        'unlimitedStorage',
-        'identity',
-        'contextMenus',
+    permissions: manifestVersion == 2 ? [...permissions, ...hostPermissions] : permissions,
 
-        '*://vk.com/*',
-        '*://m.vk.com/*',
-        '*://www.gl5.ru/*',
-        '*://www.megalyrics.ru/*',
-        '*://megalyrics.ru/*',
-        '*://genius.com/*',
-        '*://lyricshare.net/*',
-        '*://uk.ask.com/*',
-        '*://www.bing.com/*',
-        '*://duckduckgo.com/*',
-        '*://xo.wtf/*',
-        '*://www.startpage.com/*',
-        '*://ws.audioscrobbler.com/*',
-        '*://www.last.fm/*',
-    ],
-    web_accessible_resources: ['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav'],
+
+}, manifestVersion == 2 ? {
+    web_accessible_resources: resources,
     content_security_policy: "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
-};
+} : {
+    host_permissions: hostPermissions,
+    web_accessible_resources: [
+        {
+            resources: resources,
+            matches: [
+                "<all_urls>"
+            ]
+        }
+    ],
+    content_security_policy: {
+        extension_pages: "script-src 'self'; object-src 'self'"
+    },
+});
 
-if (ENV.BROWSER === 'chrome') {
-    manifest.minimum_chrome_version = '40';
-    manifest.key = ENV.MANIFEST_KEY
+if (process.env.BROWSER === 'chrome') {
+    manifest.minimum_chrome_version = manifestVersion == 2 ? '40' : '88';
+    if (process.env.MANIFEST_KEY) {
+        manifest.key = ENV.MANIFEST_KEY
+    }
 }
 
 module.exports = manifest;

@@ -1,4 +1,4 @@
-import { browser } from 'webextension-polyfill-ts';
+import browser from 'webextension-polyfill';
 
 browser.runtime.onMessage.addListener(message => {
     if (message.type === 'RELOAD_ALL_TABS') {

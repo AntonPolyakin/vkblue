@@ -1,5 +1,4 @@
-import _request from 'request';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import get from 'lodash/get';
 
 import { storageGet, storageSet } from '../../source/modules/LocalStorage/storage';
@@ -11,66 +10,104 @@ import getTrack from './api/get-track-info';
 import getArtist from './api/get-artist-info';
 import { on } from '../../source/modules/Port/background';
 
+import { TRACKS_STORAGE_KEY } from '../../source/store/tracks/constants';
+import { ARTISTS_STORAGE_KEY } from '../../source/store/artists/constants';
+
 const getArtistKey = ({ artist = '' }) => `${artist.toLowerCase()}`;
 const getTrackKey = ({ artist = '', title = '' }) => `${artist.toLowerCase()}-${title.toLowerCase()}`;
 
 on(LASTFM_GET_INFO, async request => {
-    const artist = clearString(request.artist);
-    const title = clearString(request.title);
+    try {
+        const artist = clearString(request.artist);
+        const title = clearString(request.title);
 
-    const trackKey = getTrackKey({ artist, title });
-    const trackCache = await storageGet(trackKey);
-    if (trackCache) {
-        return trackCache;
-    }
+        const {
+            ARTISTS_STORAGE_KEY: artistsStorage = {},
+            TRACKS_STORAGE_KEY: tracksStorage = {}
+        } = await storageGet([ARTISTS_STORAGE_KEY, TRACKS_STORAGE_KEY]);
 
-    let trackInfo = await getTrack({ artist, title });
+        const trackKey = getTrackKey({ artist, title });
+        const artistKey = getArtistKey({ artist });
 
-    let artistName = get(trackInfo, 'track.artist.name', artist);
-    let artistMbid = get(trackInfo, 'track.artist.mbid', null);
+        const trackCache = tracksStorage?.[trackKey];
+        const artistCache = artistsStorage[artistKey];
 
-    const artistKey = getArtistKey({ artist });
-    const artistCache = await storageGet(artistKey);
-    let artistInfo = null;
+        if (trackCache && artistCache) {
+            return {
+                artist: artistCache,
+                track: trackCache
+            };
+        }
 
-    if (artistCache) {
-        artistInfo = artistCache;
-    } else {
-        artistInfo = await getArtist({ artist: artistName, mbid: artistMbid });
-    }
+        let trackInfo = await getTrack({ artist, title });
 
-    const artistResult = get(artistInfo, 'ru.artist', get(artistInfo, 'en.artist', {}));
+        let artistName = get(trackInfo, 'track.artist.name', artist);
+        let artistMbid = get(trackInfo, 'track.artist.mbid', null);
 
-    if (!get(artistInfo, 'ru.artist.bio.content', null)) {
-        artistResult.bio = get(artistInfo, 'en.artist.bio', {});
-    }
+        let artistInfo = null;
 
-    artistResult.image = await new Promise(resolve => {
-        _request(artistResult.url, function(error, response, body) {
-            if (error) {
+        if (artistCache) {
+            artistInfo = artistCache;
+        } else {
+            artistInfo = await getArtist({ artist: artistName, mbid: artistMbid });
+        }
+
+        const artistResult = get(artistInfo, 'ru.artist', get(artistInfo, 'en.artist', {}));
+
+        if (!get(artistInfo, 'ru.artist.bio.content', null)) {
+            artistResult.bio = get(artistInfo, 'en.artist.bio', {});
+        }
+
+        artistResult.image = await new Promise(async resolve => {
+            try {
+                const res = await fetch(artistResult.url);
+                const body = await res.text();
+
+                const $ = cheerio.load(body);
+                const image = $('.header-new-background-image');
+                const content = image ? image.attr('content') : null;
+
+                if (!content) {
+                    resolve([{ '#text': null }]);
+                    return;
+                }
+
+                resolve([{ ['#text']: content }]);
+            } catch (error) {
                 resolve([{ '#text': null }]);
-                return;
             }
-
-            const $ = cheerio.load(body);
-            const image = $('.header-new-background-image');
-            const content = image ? image.attr('content') : null;
-
-            if (!content) {
-                resolve([{ '#text': null }]);
-                return;
-            }
-
-            resolve([{ ['#text']: content }]);
         });
-    });
 
-    const result = {
-        artist: artistResult,
-        track: trackInfo ? trackInfo.track : null,
-    };
+        const trackResult = trackInfo ? trackInfo.track : null;
 
-    await storageSet(trackKey, result);
+        let storage = {};
 
-    return result;
+        if (trackResult) {
+            Object.assign(storage, {
+                TRACKS_STORAGE_KEY: Object.assign(tracksStorage, { [trackKey]: trackResult }),
+            });
+        }
+
+        if (artistResult) {
+            Object.assign(storage, {
+                ARTISTS_STORAGE_KEY: Object.assign(artistsStorage, { [artistKey]: artistResult }),
+            });
+        }
+
+        if (Object.keys(storage)) {
+            await storageSet(storage);
+        }
+
+        return {
+            artist: artistResult,
+            track: trackResult
+        };
+
+    } catch (error) {
+        console.error(error);
+        return {
+            artist: null,
+            track: null
+        };
+    }
 });
