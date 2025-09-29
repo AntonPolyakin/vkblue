@@ -31,7 +31,7 @@ const manifest = Object.assign({
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
     version: '0.7.00',
-    version_name: '0.7.00 beta 5',
+    version_name: '0.7.00 beta 6',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',
@@ -79,7 +79,7 @@ const manifest = Object.assign({
 if (process.env.BROWSER === 'chrome') {
     manifest.minimum_chrome_version = manifestVersion == 2 ? '40' : '88';
     if (process.env.MANIFEST_KEY) {
-        manifest.key = ENV.MANIFEST_KEY
+        manifest.key = process.env.MANIFEST_KEY
     }
 }
 

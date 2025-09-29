@@ -17,11 +17,11 @@ import { storageClear } from '../../modules/LocalStorage/storage';
         browser.tabs.create({ url: 'https://vk.com/audios0000' });
     });
 
-    browser.tabs.query({ url: '*://vk.com/*' }).then(function(tabs) {
-        tabs.forEach(function(tab) {
-            browser.tabs.reload(tab.id);
-        });
-    });
+    // browser.tabs.query({ url: '*://vk.com/*' }).then(function(tabs) {
+    //     tabs.forEach(function(tab) {
+    //         browser.tabs.reload(tab.id);
+    //     });
+    // });
 
     browser.runtime.onInstalled.addListener(function({ reason, previousVersion }) {
         if (reason === 'install') {
