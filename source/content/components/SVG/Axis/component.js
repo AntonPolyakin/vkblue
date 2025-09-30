@@ -10,8 +10,8 @@ class Axis extends PureComponent {
         height: 100,
         padding: 10,
         count: 1,
-        mainColor: '#e7e8ec',
-        secondColor: 'white',
+        mainColor: '#71aaeb30',
+        secondColor: 'transparent',
     };
 
     constructor(props) {
@@ -46,9 +46,9 @@ class Axis extends PureComponent {
                     y2={`${y2}%`}
                     gradientUnits="userSpaceOnUse"
                 >
-                    <stop offset="0%" stopColor={secondColor} />
-                    <stop offset="50%" stopColor={mainColor} />
-                    <stop offset="100%" stopColor={secondColor} />
+                    <stop offset="0%" stopColor={mainColor} stopOpacity="0"/>
+                    <stop offset="50%" stopColor={mainColor} stopOpacity="1"/>
+                    <stop offset="100%" stopColor={mainColor} stopOpacity="0"/>
                 </linearGradient>
             </defs>
         );

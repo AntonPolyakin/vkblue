@@ -12,7 +12,7 @@ class DraggableCircle extends PureComponent {
         tooltip: 'tooltip',
         name: 'name',
         mainColor: '#577ca1',
-        secondColor: '#e7e8ec',
+        secondColor: 'var(--vkui--color_background_content, #e7e8ec)',
         onChange: Function.prototype,
     };
 
