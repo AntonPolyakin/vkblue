@@ -232,7 +232,7 @@ class BigEqualizer extends PureComponent {
     const { showEffects } = this.state;
     let backgroundColor;
     Array.from(window.document.querySelectorAll('.page_block')).some(pB => {
-      backgroundColor = window.getComputedStyle(pB).getPropertyValue('background-color');
+      backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
       return true;
     });
 
