@@ -1,4 +1,5 @@
 const manifestVersion = +process.env.MANIFEST_VERSION;
+const nodeEnv = process.env.NODE_ENV;
 const permissions = [
     'tabs',
     'storage',
@@ -24,14 +25,14 @@ const hostPermissions = [
     '*://www.last.fm/*',
     '*://searx.bndkt.io/*',
 ];
-const resources = ['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav', '*.webp', "page.js"];
+const resources = Object.assign(['*.mp3', '*.png', '*.jpg', '*.gif', '*.ttf', '*.svg', '*.wav', '*.webp', "page.js" ], (nodeEnv !== 'production' ? ["*.map"] : []) );
 const manifest = Object.assign({
     manifest_version: manifestVersion,
     name: '__MSG_extName__',
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
-    version: '0.7.00',
-    version_name: '0.7.00 beta 7',
+    version: '0.7.1',
+    version_name: '0.7.1',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',

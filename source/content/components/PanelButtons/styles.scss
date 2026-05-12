@@ -22,7 +22,7 @@
 
 .blue {
   @extend .button;
-  background-image: url('images/blue-disabled.svg');
+  color: var(--vkui--color_icon_secondary, #99a2ad);
   transition: background-color .15s ease-out,opacity .15s ease-out;
 }
 
@@ -31,5 +31,6 @@
 }
 
 .blue.enabled {
-  background-image: url('images/blue-enabled.svg');
+  fill: #356ca9;
+  color: #356ca9;
 }

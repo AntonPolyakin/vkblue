@@ -31,12 +31,12 @@ const UNMOUNT_STABILIZE_MS = 250;
 const OBSERVERS = [
   {
     name: 'header-visualizer',
-    hostSelector: '#web_spa_top_audio_player', // host anchor presence means header area exists
-    targetSelector: '#web_spa_top_audio_player', // target to watch for additions
+    hostSelector: '#page_header li[class*="_player"] > div[class*="top_audio"]', // host anchor presence means header area exists
+    targetSelector: '#page_header li[class*="_player"] > div[class*="top_audio"]', // target to watch for additions
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return !!element && !document.getElementById(HEADER_VISUALIZER_CONTAINER_ID);
+      return !!element && !document.getElementById(HEADER_VISUALIZER_CONTAINER_ID)?.children?.length;
     },
     filterUnmount(/* addedContainer */) {
       // remove only when top audio player host no longer exists
@@ -69,15 +69,15 @@ const OBSERVERS = [
   {
     name: 'main-player',
     hostSelector: '#content ._audio_page_layout', // main audio page layout
-    targetSelector: '#content ._audio_page_layout div[class*="AudioPlayerBlockSectionsLayout__root"] div[class*="AudioPlayerPlaybackBody__audioInfo"]',
+    targetSelector: '#content ._audio_page_layout div[class*="__root"] > div[class*="__audioInfo"]',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return !!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID);
+      return !!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length;
     },
     filterUnmount(/* addedContainer */) {
       // keep main player until major audio layout is gone
-      return !document.querySelector('#content .AudioPlayerBlock__root') && !document.querySelector('#content ._audio_page_layout');
+      return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
@@ -87,7 +87,7 @@ const OBSERVERS = [
       container.classList.add(...classList);
       container.style.cssText = 'position: relative; margin-top: 16px; overflow:hidden; z-index: 1;';
 
-      const block = document.querySelector('#content ._audio_page_layout .AudioPlayerBlock__root .vkui__root, #content ._audio_page_layout .AudioPlayerBlock__root');
+      const content = document.querySelector('#content');
       const style = document.createElement('style');
       style.textContent = `${classList.map(item => '.' + item).join('')}:empty {
         margin: 0px!important;
@@ -99,9 +99,9 @@ const OBSERVERS = [
         -ms-user-select: initial!important;
       }`;
 
-      if (block) {
-        block.appendChild(style);
-        block.insertBefore(container, block.firstChild);
+      if (content) {
+        content.appendChild(style);
+        content.insertBefore(container, content.firstChild);
       } else {
         // fallback: try insert near the element's closest vkui__root
         const rootBlock = element && element.closest && element.closest('.vkui__root');
@@ -113,22 +113,22 @@ const OBSERVERS = [
 
   {
     name: 'top-player',
-    hostSelector: '#top_audio_layer_place', // top audio layer place is anchor
-    targetSelector: '.audio_layer_container div[class*="AudioPlayerBlockSectionsLayout__root"]',
+    hostSelector: '#page_header li[class*="_player"] > div[class*="top_audio"]', // top audio layer place is anchor
+    targetSelector: 'div[data-testid*="Popover"] > div > div[data-testid*="AudioLayer"]',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
       // additionally require compact layout ancestor (same logic as before)
-      return element && !document.getElementById(HEADER_PLAYER_CONTAINER_ID) && element.closest && element.closest('div[class*="AudioPlayerBlockCompactLayout__root"]');
+      return element && !document.getElementById(HEADER_PLAYER_CONTAINER_ID)?.children?.length;// element.closest && element.closest('div[class*="AudioPlayerBlockCompactLayout__root"]')
     },
     filterUnmount(/* addedContainer */) {
       // unmount when top audio layer place not present
-      return !document.querySelector(this.hostSelector);
+      return !document.querySelector(this.targetSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
       if (!element) return null;
-      const audioLayer = element.closest && element.closest('.audio_layer_container');
+      const audioLayer = element;
       const container = document.createElement('div');
       container.id = HEADER_PLAYER_CONTAINER_ID;
       container.style.cssText = 'position: relative; overflow:hidden; z-index: 1;';
@@ -139,8 +139,8 @@ const OBSERVERS = [
 
       // adjust ui_scroll_container when attribute height changes (borrowed from your logic)
       try {
-        const elContainer = audioLayer ? audioLayer.querySelector('.AudioPlayerBlock__root') : null;
-        const uiScrollContainer = audioLayer ? audioLayer.querySelector('.audio_page_content_block_wrap.ui_scroll_container') : null;
+        const elContainer = audioLayer ? audioLayer.children[0] : null;
+        const uiScrollContainer = audioLayer ? audioLayer.children[1] : null;
         if (uiScrollContainer) {
           const attrObserver = new MutationObserver(mutations => {
             try {
@@ -168,14 +168,14 @@ const OBSERVERS = [
   {
     name: 'panel-buttons',
     hostSelector: '#content .AudioPlayerBlock__root',
-    targetSelector: '#content div[class*="AudioPlayerUserControlsContainer__userButtonsContainer"]',
+    targetSelector: '#content div[data-testid*="LayoutGroups_After"] > div',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return !!element && !document.getElementById(PANEL_BUTTONS_CONTAINER_ID);
+      return !!element && !document.getElementById(PANEL_BUTTONS_CONTAINER_ID)?.children?.length && !element?.parentElement?.querySelector('[data-testid="loading-skeleton"]');
     },
     filterUnmount(/* addedContainer */) {
-      return !document.querySelector('#content .AudioPlayerBlock__root') && !document.querySelector('#content ._audio_page_layout');
+      return !document.querySelector(this.hostSelector) && !document.querySelector('#content ._audio_page_layout');
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
@@ -186,7 +186,6 @@ const OBSERVERS = [
       container.style.cssText = `
         float: left;
         position: relative;
-        padding-right: 12px;
       `;
       // try to find slider parent's content sibling (replicate your previous traversal safely)
       try {
@@ -200,12 +199,12 @@ const OBSERVERS = [
             const firstChild = contentChild && contentChild.firstChild;
             console.log('showTooltip', globalThis?.tooltips?.show);
             const siblingElement = firstChild ? firstChild.querySelector('button') : null;
-            setVkTooltip({container,text:'VK Blue', fromSibling:true, siblingElement});
+            setVkTooltip({container,text:'VK Blue', fromSibling:true, siblingElement, debug: true});
           }
         }
       } catch (e) { console.debug('panel-buttons tooltip setup failed', e); }
 
-      element.insertBefore(container, element.firstChild);
+      element.insertBefore(container, element.lastChild);
       return container;
     }
   },
@@ -213,14 +212,14 @@ const OBSERVERS = [
   {
     name: 'lastfm-buttons',
     hostSelector: '#content .AudioPlayerBlock__root',
-    targetSelector: '#content div[class*="AudioPlayerVolumeSlider__bar"], #content div[class*="AudioPlayerPlaybackBody__audioButtons"]',
+    targetSelector: '#content div[class*="__audioButtons"] div[role="group"]',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return !!element && !document.getElementById(LAST_FM_BUTTONS_CONTAINER_ID);
+      return !!element && !document.getElementById(LAST_FM_BUTTONS_CONTAINER_ID)?.children?.length && !element?.parentElement?.querySelector('[data-testid="loading-skeleton"]');
     },
     filterUnmount(/* addedContainer */) {
-      return !document.querySelector('#content .AudioPlayerBlock__root') && !document.querySelector('#content ._audio_page_layout');
+      return !document.querySelector(this.hostSelector) && !document.querySelector('#content ._audio_page_layout');
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
@@ -231,7 +230,6 @@ const OBSERVERS = [
         width: 24px;
         height: 24px;
         overflow: visible;
-        margin-right: 8px;
       `;
 
       // attempt to append to sensible sibling (mirrors your original safe traversal)

@@ -56,8 +56,10 @@ export function setVkTooltip(options) {
 
             let injectedStyle = document.querySelector('[data-vk-injected-style]') || document.createElement('style');
             injectedStyle.setAttribute('data-vk-injected-style', '1');
-            injectedStyle.textContent = `${tooltipSelector}:not([data-vk-clone]) { visibility: hidden !important; }
-.AudioPlayerBlock__root { overflow: hidden; }`;
+            injectedStyle.textContent = `
+                ${tooltipSelector}:not([data-vk-clone]) { visibility: hidden !important; }
+                .AudioPlayerBlock__root { overflow: hidden; }
+            `;
             try { document.head.appendChild(injectedStyle); }
             catch (e) {
                 try { document.documentElement.appendChild(injectedStyle); } catch (e2) { log('failed append injectedStyle', e2); }
@@ -131,23 +133,25 @@ export function setVkTooltip(options) {
             const topOffset = 40;
             const leftDelta = 20;
 
-            let cloneStyleObj = {};
-
-            cloneStyleObj = CSSToObject(original.style.cssText || '') || {};
-
-            cloneStyleObj.position = 'fixed';
-            cloneStyleObj.inset = `${Math.round(rect.y + topOffset)}px auto auto ${Math.round(rect.x - leftDelta)}px`;
-            cloneStyleObj.pointerEvents = 'none';
-            cloneStyleObj.visibility = 'visible';
-            cloneStyleObj.zIndex = (parseInt(cloneStyleObj.zIndex || '0', 10) || 999999).toString();
-
             try {
                 const s = clone.querySelector && clone.querySelector('span');
                 if (s) s.textContent = text;
             } catch (e) { }
 
+
+            let cloneStyleObj = CSSToObject(original.style.cssText || '') || {};
+            cloneStyleObj = Object.assign(cloneStyleObj, {
+                position: 'fixed',
+                inset: `${Math.round(rect.y + topOffset)}px auto auto ${Math.round(rect.x - leftDelta)}px`,
+                pointerEvents: 'none',
+                visibility: 'hidden',
+                zIndex: (parseInt(cloneStyleObj.zIndex || '0', 10) || 999999).toString(),
+            });
+
+
             try {
                 clone.style.cssText = objectToCSS(cloneStyleObj);
+                clone.children[0].style.cssText = objectToCSS(cloneArrowStyleObj);
             } catch (e) {
                 warn('apply style to clone failed', e);
             }
@@ -161,6 +165,18 @@ export function setVkTooltip(options) {
                 try { injectedStyle.remove(); } catch (e3) { }
                 ctx._vkProcessing = false;
                 return;
+            }
+
+            try {
+                let cloneArrowStyleObj = CSSToObject(original.children[0].style.cssText || '') || {};
+                cloneArrowStyleObj = Object.assign(cloneArrowStyleObj, {
+                    left: 'calc(50% - 10px)'//((clone.offsetWidth / 2) - (20 / 2)) + 'px',
+                });
+
+                clone.children[0].style.cssText = objectToCSS(cloneArrowStyleObj);
+                clone.style.visibility = 'visible';
+            } catch (e) {
+                warn('apply arrow style failed', e);
             }
 
             ctx._vkTooltipClone = clone;

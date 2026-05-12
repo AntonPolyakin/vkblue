@@ -40,8 +40,8 @@ const Footer = styled.div`
     height: 54px;
     line-height: 54px;
     padding: 0px 25px;
-    border-top: 1px solid rgb(231, 232, 236);
-    background: rgb(250, 251, 252);
+    border-top: 1px solid var(--vkui--color_image_placeholder, rgb(250, 251, 252));
+    background: var(--vkui--color_image_placeholder, rgb(250, 251, 252));
 
     p {
         margin: 0;
@@ -69,7 +69,7 @@ const Body = styled.div`
     max-height: 50vh;
 
     h3 {
-        color: #000;
+        color: var(--vkui--color_text_primary, #000);
         margin: 0 0 10px;
         font-size: 15px;
     }
@@ -216,7 +216,7 @@ const Label = styled.label`
     input {
         height: 20px;
         width: 45px;
-        color: black !important;
+        color: var(--vkui--color_text_primary,#000) !important;
         border-radius: 2px;
         border: 1px solid rgba(128, 128, 128, 0.5);
         box-shadow: none;

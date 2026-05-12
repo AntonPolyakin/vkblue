@@ -27,7 +27,16 @@ class PanelButtons extends Component {
 
         return (
             <div styleName="buttons">
-                <div styleName={blueClassnames} onClick={this.onClickBlue} />
+                <svg styleName={blueClassnames} onClick={this.onClickBlue} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <g fill="none" stroke="currentColor" strokeWidth="6">
+                        <circle cx="50" cy="50" r="18" />
+                        <circle cx="50" cy="50" r="30" />
+                    </g>
+                    <g fill="currentColor">
+                        <circle cx="50" cy="50" r="8" />
+                        <circle cx="77.5" cy="80" r="4" />
+                    </g>
+                </svg>
             </div>
         );
     }
