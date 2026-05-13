@@ -43,13 +43,13 @@ class LastFM extends Component {
         );
         const enabledView = (
 
-            <svg styleName={lastFMClassnames} onClick={this.onClickLastFM} xmlns="http://www.w3.org/2000/svg" class="processing" viewBox="0 0 24 24" fill="currentColor">
+            <svg styleName={lastFMClassnames} onClick={this.onClickLastFM} xmlns="http://www.w3.org/2000/svg" className="processing" viewBox="0 0 24 24" fill="currentColor">
                 <defs>
                     <linearGradient id="snakeGradient">
-                        <stop offset="0%" stop-color="transparent" />
-                        <stop offset="35%" stop-color="white" />
-                        <stop offset="65%" stop-color="white" />
-                        <stop offset="100%" stop-color="transparent" />
+                        <stop offset="0%" stopColor="transparent" />
+                        <stop offset="35%" stopColor="white" />
+                        <stop offset="65%" stopColor="white" />
+                        <stop offset="100%" stopColor="transparent" />
 
                         <animateTransform attributeName="gradientTransform" type="translate" from="-1 0" to="1 0" dur="1s" repeatCount="indefinite" />
                     </linearGradient>

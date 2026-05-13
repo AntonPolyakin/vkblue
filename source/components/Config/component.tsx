@@ -12,7 +12,8 @@ import { getPresetsPresets } from '../../store/presets/selectors';
 import { Preset } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
-import { clampToRange } from '../../utils/utils';
+import { clampToRange } from '../../utils/js-utils';
+import { reset } from '../../../modules/LastFMScrobbler/content';
 
 const _Checkbox: any = require('../../content/components/Checkbox/component').default;
 
@@ -509,7 +510,7 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                             const reader = new FileReader();
                                             reader.onload = onLoadFileEvent => {
                                                 try {
-                                                    const result = onLoadFileEvent.target.result as string;
+                                                    const result = (onLoadFileEvent.target as any).result as string;
                                                     const newPresets = JSON.parse(result).map(preset => {
                                                         preset.values = preset.values.map(value=>clampToRange(+value || 0, [-1, 1]))
                                                         return preset;
@@ -522,7 +523,7 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                                     alert(`Упс! Не валидный файл пресетов! Ошибка: ${e}`);
                                                 }
                                             };
-                                            reader.readAsText(onChangeInputEvent.target.files[0], 'utf8');
+                                            reader.readAsText((onChangeInputEvent.target as any).files[0], 'utf8');
                                         }}
                                     />
                                     <InputLabelEmpty>Импорт</InputLabelEmpty> настроек эквалайзера (.json) <br />
@@ -559,6 +560,10 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                     onClick={() => {
                         updatePresets(newPresets);
 
+                        if(settings.scrobbler && !scrobbler){
+                            reset();
+                        }
+                        
                         changeSettings({
                             equalizer,
                             equalizerAnalyser,

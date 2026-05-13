@@ -1,6 +1,8 @@
 // improved-places.js
-import { CSSToObject } from '../../utils/utils.js';
+import { CSSToObject } from '../../utils/js-utils.js';
 import { setVkTooltip } from '../helpers/vk-tooltip.js';
+import { getSettingsScrobblerEnabled } from '../../store/settings/selectors';
+import { store } from '../../store/index';
 
 /**
  * Improved hybrid DOM observers for VK player integration.
@@ -113,7 +115,7 @@ const OBSERVERS = [
 
   {
     name: 'top-player',
-    hostSelector: '#page_header li[class*="_player"] > div[class*="top_audio"]', // top audio layer place is anchor
+    hostSelector: 'div[data-testid*="Popover"] > div > div[data-testid*="AudioLayer"]', // top audio layer place is anchor
     targetSelector: 'div[data-testid*="Popover"] > div > div[data-testid*="AudioLayer"]',
     filterMount(node) {
       const sel = this.targetSelector;
@@ -123,7 +125,7 @@ const OBSERVERS = [
     },
     filterUnmount(/* addedContainer */) {
       // unmount when top audio layer place not present
-      return !document.querySelector(this.targetSelector);
+      return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
@@ -213,6 +215,10 @@ const OBSERVERS = [
     name: 'lastfm-buttons',
     hostSelector: '#content .AudioPlayerBlock__root',
     targetSelector: '#content div[class*="__audioButtons"] div[role="group"]',
+    visibility() {
+    return getSettingsScrobblerEnabled(store.getState());
+  },
+
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
@@ -353,6 +359,11 @@ class DOMObservers {
         const targets = document.querySelectorAll(obs.targetSelector);
         for (const node of targets) {
           if (this.added[obs.name]) break;
+
+          if (!this.checkVisibility(obs)) {
+            continue;
+          }
+
           try {
             if (obs.filterMount(node)) {
               const container = obs.createContainer(node);
@@ -377,6 +388,11 @@ class DOMObservers {
     OBSERVERS.forEach(obs => {
       try {
         if (this.added[obs.name]) return; // already added
+
+        if (!this.checkVisibility(obs)) {
+          return;
+        }
+
         if (!obs.filterMount(node)) return;
         const container = obs.createContainer(node);
         if (!container) return;
@@ -417,6 +433,18 @@ class DOMObservers {
     for (const t of this.pendingRemovals.values()) clearTimeout(t);
     this.pendingRemovals.clear();
     // leave added containers in DOM; caller can remove if desired
+  }
+
+  checkVisibility(obs) {
+    if (obs.visibility === undefined) {
+      return true;
+    }
+
+    if (typeof obs.visibility === 'function') {
+      return !!obs.visibility();
+    }
+
+    return !!obs.visibility;
   }
 }
 

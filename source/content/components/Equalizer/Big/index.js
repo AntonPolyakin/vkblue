@@ -25,6 +25,7 @@ import {
 } from '../../../../store/settings/selectors';
 import { getPresetsPresets, getPresetsAuto, getPresetsCurrent } from '../../../../store/presets/selectors';
 import { deletePreset, updateAutoPreset, updateCurrentPreset } from '../../../../actionCreators/presets';
+import { jsxJoin } from '../../../../utils/jsx-utils';
 
 const EFFECTS = [
   { name: 'ambience', text: 'Ambience' },
@@ -247,14 +248,32 @@ class BigEqualizer extends PureComponent {
               onDelete={presetsDeletePreset}
             />
           </div>
-          {current === -1 ? (
-            <div styleName="new">
-              <span onClick={onAddPreset}>Сохранить</span>
-            </div>
-          ) : null}
+          <div styleName="links">
+            {jsxJoin(
+              [
+                current === -1 && (
+                  <div key="save" styleName="new">
+                    <span onClick={onAddPreset}>Сохранить</span>
+                  </div>
+                ),
+                current === -1 && false && (
+                  <div key="default" styleName="new">
+                    <span>Сделать по умолчанию</span>
+                  </div>
+                ),
+                current === 0 && false && (
+                  <div key="reset" styleName="new">
+                    <span>Сбросить по умолчанию</span>
+                  </div>
+                )
+              ],
+              <span styleName="separator">|</span>
+            )}
+          </div>
+
           <div styleName="autodetect">
             <Checkbox value={auto} onChange={({ value }) => presetsUpdateAuto(value)}>
-              Определять автоматически
+              Автоопределение
             </Checkbox>
           </div>
         </div>

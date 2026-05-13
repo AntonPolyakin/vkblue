@@ -1,4 +1,4 @@
-import { waitForElement, CSSToObject, objectToCSS, onDocumentReady } from '../../utils/utils.js';
+import { waitForElement, CSSToObject, objectToCSS, onDocumentReady } from '../../utils/js-utils.js';
 
 const tooltipBound = new WeakMap();
 
@@ -151,7 +151,6 @@ export function setVkTooltip(options) {
 
             try {
                 clone.style.cssText = objectToCSS(cloneStyleObj);
-                clone.children[0].style.cssText = objectToCSS(cloneArrowStyleObj);
             } catch (e) {
                 warn('apply style to clone failed', e);
             }

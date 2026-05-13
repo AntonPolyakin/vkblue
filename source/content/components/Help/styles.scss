@@ -1,6 +1,6 @@
 .help {
   position: relative;
-  color: black;
+  color: var(--vkui--color_text_primary, #000);
 
   .title-help {
     height: 54px;
