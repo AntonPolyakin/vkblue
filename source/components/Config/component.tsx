@@ -9,11 +9,12 @@ import CloseIcon from './images/close.png';
 import { SettingsStore } from '../../store/settings/types';
 import { updateSettings } from '../../actionCreators/settings';
 import { getPresetsPresets } from '../../store/presets/selectors';
-import { Preset } from '../../store/presets/types';
+import { Preset, PresetList } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
-import { clampToRange } from '../../utils/js-utils';
+import { clampToRange, getRandomString } from '../../utils/js-utils';
 import { reset } from '../../../modules/LastFMScrobbler/content';
+import { presets as defaultPresets } from '../../../source/store/presets/reducer';
 
 const _Checkbox: any = require('../../content/components/Checkbox/component').default;
 
@@ -240,18 +241,19 @@ const ResetAppButton = styled.span`
 
 interface ConfigProps {
     settings: SettingsStore;
-    presets: Preset[];
+    presets: PresetList;
     closeLightBox(): void;
     changeSettings(data: SettingsStore): void;
-    updatePresets(presets: Preset[]): void;
+    updatePresets(presets: PresetList): void;
 }
 
-const presetsIsValid: (presets: Preset[]) => boolean = presets => {
-    if (presets.length < 1) {
+const presetsIsValid: (presets: PresetList) => boolean = presets => {
+    let presetsArray = Object.values(presets);
+    if (presetsArray.length < 1) {
         throw Error('Presets must be exist!');
     }
 
-    return presets.every(preset => {
+    return presetsArray.every(preset => {
         if (!preset.name) {
             throw Error(`Preset: name must be exist!`);
         }
@@ -307,7 +309,9 @@ const Config: React.FunctionComponent<ConfigProps> = ({
     const presetsHref =
         'data:text/json;charset=utf-8,' +
         encodeURIComponent(
-            JSON.stringify(presets.map(({ values, name, genres }) => ({ values: values.map(value=>clampToRange(+value || 0, [-1, 1])), name, genres })))
+            JSON.stringify(
+                normalizePresets(presets)
+            )
                 .replace(/,"/g, ',\n"')
                 .replace(/},/g, '\n},\n')
                 .replace(/{/g, '{\n')
@@ -511,10 +515,7 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                             reader.onload = onLoadFileEvent => {
                                                 try {
                                                     const result = (onLoadFileEvent.target as any).result as string;
-                                                    const newPresets = JSON.parse(result).map(preset => {
-                                                        preset.values = preset.values.map(value=>clampToRange(+value || 0, [-1, 1]))
-                                                        return preset;
-                                                    }) as Preset[];
+                                                    const newPresets = normalizePresets(JSON.parse(result));
 
                                                     if (presetsIsValid(newPresets)) {
                                                         setNewPresets(newPresets);
@@ -560,10 +561,10 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                     onClick={() => {
                         updatePresets(newPresets);
 
-                        if(settings.scrobbler && !scrobbler){
+                        if (settings.scrobbler && !scrobbler) {
                             reset();
                         }
-                        
+
                         changeSettings({
                             equalizer,
                             equalizerAnalyser,
@@ -587,6 +588,34 @@ const Config: React.FunctionComponent<ConfigProps> = ({
         </SettingsWrapper>
     );
 };
+
+function normalizePresets(presets: PresetList | Preset[]): PresetList {
+    let presetsArray;
+    let presetsIds;
+
+    if (Array.isArray(presets)) {
+        presetsArray = presets;
+        presetsIds = [];
+    } else if (typeof presets == 'object') {
+        presetsArray = Object.values(presets);
+        presetsIds = Object.keys(presets);
+    }
+
+    return presetsArray?.reduce((prev, preset: Preset) => {
+        let presetId = presetsIds.find(item => presets[item] == preset) || Object.keys(defaultPresets).find(key => {
+            return defaultPresets[key]?.name == preset?.name;
+        }) || getRandomString(32);
+
+        let { values, name, genres, custom } = preset;
+        prev[presetId] = {
+            values: values.map(value => clampToRange(+value || 0, [-1, 1])),
+            name,
+            genres,
+            custom
+        };
+        return prev;
+    }, {}) || {};
+}
 
 const mapStateToProps = (state: GlobalStore) => ({
     settings: getSettings(state),

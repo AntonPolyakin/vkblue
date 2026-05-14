@@ -24,7 +24,7 @@ import {
   getSettingsSurroundEnabled,
 } from '../../../../store/settings/selectors';
 import { getPresetsPresets, getPresetsAuto, getPresetsCurrent } from '../../../../store/presets/selectors';
-import { deletePreset, updateAutoPreset, updateCurrentPreset } from '../../../../actionCreators/presets';
+import { deletePreset, updateAutoPreset, updateCurrentPreset, updatePreset } from '../../../../actionCreators/presets';
 import { jsxJoin } from '../../../../utils/jsx-utils';
 
 const EFFECTS = [
@@ -214,6 +214,8 @@ class BigEqualizer extends PureComponent {
     });
   }
 
+
+
   render() {
     const { effects, onAddPreset, onChangeSurround, onToggleEffects, onChangeGainEffect } = this;
     const {
@@ -225,10 +227,12 @@ class BigEqualizer extends PureComponent {
       gainEffect = 0.5,
       presetsUpdateAuto,
       presetsDeletePreset,
+      presetsUpdatePreset,
       presetsUpdateCurrent,
       settingsSurround,
       settingsCompressor,
       enabled,
+      filters
     } = this.props;
     const { showEffects } = this.state;
     let backgroundColor;
@@ -236,6 +240,17 @@ class BigEqualizer extends PureComponent {
       backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
       return true;
     });
+
+   let isOriginalDefault = presets['default'] && [...new Set(presets['default'].values)].length === 1;
+
+    const updateDefaultPreset = (preset) => {
+      let defaultPresetValues = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let presetValues = preset?.values || defaultPresetValues;
+      let newPreset = { values: presetValues };
+      let presetId = 'default';
+
+      presetsUpdatePreset(newPreset, presetId);
+    }
 
     return (
       <div styleName="wrapper">
@@ -251,19 +266,22 @@ class BigEqualizer extends PureComponent {
           <div styleName="links">
             {jsxJoin(
               [
-                current === -1 && (
+                current === null && (
                   <div key="save" styleName="new">
                     <span onClick={onAddPreset}>Сохранить</span>
                   </div>
                 ),
-                current === -1 && false && (
+                current === null && (
                   <div key="default" styleName="new">
-                    <span>Сделать по умолчанию</span>
+                    <span onClick={() => {
+                      updateDefaultPreset({ values: filters });
+                      presetsUpdateCurrent('default');
+                      }}>Сделать по умолчанию</span>
                   </div>
                 ),
-                current === 0 && false && (
+                current === 'default' && !isOriginalDefault && (
                   <div key="reset" styleName="new">
-                    <span>Сбросить по умолчанию</span>
+                    <span onClick={() => updateDefaultPreset()}>Сбросить по умолчанию</span>
                   </div>
                 )
               ],
@@ -333,6 +351,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   presetsUpdateAuto: updateAutoPreset,
   presetsUpdateCurrent: updateCurrentPreset,
+  presetsUpdatePreset: updatePreset,
   presetsDeletePreset: deletePreset,
   openLightBox,
   equalizerUpdateSurround,

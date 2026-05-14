@@ -7,6 +7,7 @@ import {
     presetsUpdate,
     presetsUpdateAuto,
     presetsUpdateCurrent,
+    presetsUpdatePreset,
     presetsUpdatePresets,
 } from '../store/presets/actionCreators';
 import { getPresets, getPresetsPresets, getPresetsCurrentValues } from '../store/presets/selectors';
@@ -17,6 +18,7 @@ import {
     deletePreset,
     updateAutoPreset,
     updateCurrentPreset,
+    updatePreset,
     updatePresets,
 } from '../actionCreators/presets';
 import { equalizerUpdateBiquadFilters } from '../store/equalizer/actionCreators';
@@ -29,7 +31,9 @@ import {
     UPDATE_AUTO_PRESET,
     UPDATE_CURRENT_PRESET,
     UPDATE_PRESETS,
+    UPDATE_PRESET,
 } from '../constants';
+import { caseIndependentCompare } from '../utils/js-utils';
 
 function* handleLoadPresets() {
     const presets: PresetsStore = yield call(storageGet, PRESETS_STORAGE_KEY);
@@ -48,6 +52,20 @@ function* handleUpdatePresets(action: ReturnType<typeof updatePresets>) {
 
 export function* watchUpdatePresets() {
     yield takeEvery(UPDATE_PRESETS, handleUpdatePresets);
+}
+
+function* handleUpdatePreset(action: ReturnType<typeof updatePreset>) {
+    yield put(presetsUpdatePreset(action.data.preset, action.data.presetId));
+
+    const presets: ReturnType<typeof getPresets> = yield select(getPresets);
+    const presetsValues: ReturnType<typeof getPresetsCurrentValues> = yield select(getPresetsCurrentValues);
+
+    yield put(equalizerUpdateBiquadFilters(presetsValues));
+    yield call(storageSet, PRESETS_STORAGE_KEY, presets);
+}
+
+export function* watchUpdatePreset() {
+    yield takeEvery(UPDATE_PRESET, handleUpdatePreset);
 }
 
 function* handlePresetsAddPreset(action: ReturnType<typeof addPreset>) {
@@ -72,7 +90,7 @@ export function* watchPresetsAddPreset() {
 }
 
 function* handlePresetsDeletePreset(action: ReturnType<typeof deletePreset>) {
-    yield put(presetsUpdateCurrent(0));
+    yield put(presetsUpdateCurrent('default'));
     yield put(presetsDeletePreset(action.data));
 
     const presets: ReturnType<typeof getPresets> = yield select(getPresets);
@@ -107,15 +125,16 @@ function* handlePresetsUpdateAuto(action: ReturnType<typeof updateAutoPreset>) {
         const presets: ReturnType<typeof getPresetsPresets> = yield select(getPresetsPresets);
         const genres: string[] = yield select(getGenres);
 
-        const indexPreset = presets
-            .findIndex(preset => {
-                return genres.some(genre => preset.genres.indexOf(genre.toLowerCase()) !== -1);
+        const presetId = Object.keys(presets)
+            .find(id => {
+                let preset = presets[id];
+                return genres.some(genre => preset.genres.some(presetGenre=> caseIndependentCompare(presetGenre, genre)));
             });
 
-        const newPreset = indexPreset > -1 ? indexPreset : 0;
-        const newFilters = presets[newPreset].values;
+        const newPresetId = presetId || 'default';
+        const newFilters = presets[newPresetId].values;
 
-        yield put(presetsUpdateCurrent(newPreset));
+        yield put(presetsUpdateCurrent(newPresetId));
         yield put(equalizerUpdateBiquadFilters(newFilters));
     }
 

@@ -42,12 +42,6 @@
     box-sizing: border-box;
     display: flex;
     gap: 10px;
-
-    &:after {
-      content: "";
-      display: block;
-      clear: both;
-    }
     .autodetect {
       box-sizing: border-box;
       height: 25px;
