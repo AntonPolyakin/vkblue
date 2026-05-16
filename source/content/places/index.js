@@ -45,7 +45,7 @@ const OBSERVERS = [
       return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
-      const parent = node.matches(this.targetSelector) ? node : node.querySelector(this.targetSelector);
+      const parent = (node.matches(this.targetSelector) ? node : node.querySelector(this.targetSelector)).parentElement;
       if (!parent) return null;
       const container = document.createElement('li');
       container.onclick = function () {

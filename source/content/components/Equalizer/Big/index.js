@@ -237,7 +237,7 @@ class BigEqualizer extends PureComponent {
     } = this.props;
     const { showEffects } = this.state;
     let backgroundColor;
-    Array.from(window.document.querySelectorAll('.page_block')).some(pB => {
+    Array.from(window.document.querySelectorAll('[class$="content_block"]')).some(pB => {
       backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
       return true;
     });
@@ -330,7 +330,7 @@ class BigEqualizer extends PureComponent {
         </div>
         <div styleName={ClassNames('effects-wrapper', { opened: showEffects })} style={{ backgroundColor }}>
           <span onClick={onToggleEffects} style={{ backgroundColor }}>
-            Effects
+            Эффекты
           </span>
           <div styleName="effects">
             <ul>

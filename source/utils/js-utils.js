@@ -225,3 +225,106 @@ export function sortArrayOfObjects(array, rules, sortFunction) {
     return 0;
   });
 }
+
+
+/**
+ * JSON.stringify with custom per-path formatters.
+ * @param {Object} obj
+ * @param {Object<string, Function>} [formatters={}]
+ * @param {number} [space=2]
+ * @returns {string}
+ */
+export function stringifyCustom(obj, formatters = {}, space) {
+    space = space == undefined ? 2 : space;
+    function get(obj, key) {
+        return obj[key];
+    }
+
+    function createMarker(id) {
+        return `__FORMATTER_${id}__`;
+    }
+
+    const formatterEntries = Object.entries(formatters)
+        .sort((a, b) =>
+            b[0].split('.').length -
+            a[0].split('.').length
+        );
+
+    const markers = new Map();
+
+    let markerId = 0;
+
+    function cloneWithMarkers(current, currentPath = '') {
+
+        if (Array.isArray(current)) {
+            return current.map((item, index) =>
+                cloneWithMarkers(
+                    item,
+                    currentPath
+                        ? `${currentPath}.${index}`
+                        : `${index}`
+                )
+            );
+        }
+
+        if (
+            current &&
+            typeof current === 'object'
+        ) {
+
+            const result = {};
+
+            for (const key of Object.keys(current)) {
+
+                const fullPath = currentPath
+                    ? `${currentPath}.${key}`
+                    : key;
+
+                const formatterEntry = formatterEntries.find(
+                    ([path]) => path === fullPath
+                );
+
+                if (formatterEntry) {
+
+                    /** @type {Function} */
+                    const formatterFn = formatterEntry?.[1];
+
+                    const marker = createMarker(markerId++);
+
+                    markers.set(
+                        marker,
+                        formatterFn?.['call'](this,
+                            get(obj, fullPath),
+                            fullPath,
+                            obj
+                        )
+                    );
+
+                    result[key] = marker;
+
+                } else {
+                    result[key] = cloneWithMarkers(
+                        current[key],
+                        fullPath
+                    );
+                }
+            }
+
+            return result;
+        }
+
+        return current;
+    }
+
+    const prepared = cloneWithMarkers(obj);
+
+    return JSON.stringify(prepared, null, space)
+        .replace(
+            /"__FORMATTER_\d+__"/g,
+            (match) => {
+                const marker = match.slice(1, -1);
+
+                return markers.get(marker);
+            }
+        );
+}

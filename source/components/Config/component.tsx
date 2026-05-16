@@ -12,7 +12,7 @@ import { getPresetsPresets } from '../../store/presets/selectors';
 import { Preset, PresetList } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
-import { clampToRange, getRandomString } from '../../utils/js-utils';
+import { clampToRange, getRandomString, stringifyCustom } from '../../utils/js-utils';
 import { reset } from '../../../modules/LastFMScrobbler/content';
 import { presets as defaultPresets } from '../../../source/store/presets/reducer';
 
@@ -306,17 +306,22 @@ const Config: React.FunctionComponent<ConfigProps> = ({
         settings.equalizerCompressorRelease,
     );
 
-    const presetsHref =
-        'data:text/json;charset=utf-8,' +
-        encodeURIComponent(
-            JSON.stringify(
-                normalizePresets(presets)
-            )
-                .replace(/,"/g, ',\n"')
-                .replace(/},/g, '\n},\n')
-                .replace(/{/g, '{\n')
-                .replace(/}]/g, '\n}]'),
-        );
+    let jsonStr = stringifyCustom({
+        presets
+    }, {
+        presets: (value) => {
+            let end = '\n ';
+            return JSON.stringify(value)
+                .replace(/^{/g, (`{${end}`))
+                .replace(/,"/g, (`,${end}"`))
+                .replace(/},/g, (`${end}},${end}`))
+                .replace(/{/g, (`{${end}`))
+                .replace(/}]/g, (`${end}}]`))
+                .replace(/}}/g, (`${end}}${end}${end}}`));
+        }
+    }, 1);
+
+    const presetsHref = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
 
     return (
         <SettingsWrapper>
@@ -515,7 +520,9 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                             reader.onload = onLoadFileEvent => {
                                                 try {
                                                     const result = (onLoadFileEvent.target as any).result as string;
-                                                    const newPresets = normalizePresets(JSON.parse(result));
+                                                    let json = JSON.parse(result);
+                                                    let presets = json?.presets || json;
+                                                    const newPresets = normalizePresets(presets);
 
                                                     if (presetsIsValid(newPresets)) {
                                                         setNewPresets(newPresets);

@@ -86,6 +86,7 @@
     bottom: -77px;
     height: 77px;
     padding: 20px 0 0;
+    background-color: var(--vkui--color_background_content, white);
 
     &.opened {
       bottom: 0;
