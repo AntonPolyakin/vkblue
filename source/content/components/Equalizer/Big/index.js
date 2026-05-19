@@ -237,7 +237,7 @@ class BigEqualizer extends PureComponent {
     } = this.props;
     const { showEffects } = this.state;
     let backgroundColor;
-    Array.from(window.document.querySelectorAll('[class$="content_block"]')).some(pB => {
+    Array.from(window.document.querySelectorAll('#spa_layout_content section')).some(pB => {
       backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
       return true;
     });
