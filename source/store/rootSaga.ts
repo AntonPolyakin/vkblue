@@ -10,6 +10,7 @@ import {
     watchPresetsUpdateAuto,
     watchPresetsUpdateCurrent,
     watchUpdatePresets,
+    watchUpdatePreset,
 } from '../sagas/presets';
 import { watchLoadScrobbler, watchSwitchScrobbler } from '../sagas/scrobbler';
 
@@ -31,6 +32,7 @@ export function* rootSaga() {
         watchPresetsDeletePreset(),
         watchPresetsAddPreset(),
         watchUpdatePresets(),
+        watchUpdatePreset(),
         watchEqualizerUpdateFilters(),
         watchSwitchScrobbler(),
         watchLoadScrobbler(),

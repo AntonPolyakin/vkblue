@@ -1,7 +1,9 @@
-import { LASTFM_AUTH, LASTFM_SCROBBLE, LASTFM_PLAYING_NOW } from './action-types';
+import { LASTFM_AUTH, LASTFM_RESET, LASTFM_SCROBBLE, LASTFM_PLAYING_NOW } from './action-types';
 import { send } from '../../source/modules/Port/content';
 
 export const auth = () => send(LASTFM_AUTH);
+
+export const reset = () => send(LASTFM_RESET);
 
 export const scrobble = data => send(LASTFM_SCROBBLE, data);
 

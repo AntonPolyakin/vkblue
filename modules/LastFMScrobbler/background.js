@@ -1,4 +1,4 @@
-import { LASTFM_AUTH, LASTFM_SCROBBLE, LASTFM_PLAYING_NOW } from './action-types';
+import { LASTFM_AUTH, LASTFM_RESET, LASTFM_SCROBBLE, LASTFM_PLAYING_NOW } from './action-types';
 
 import getUserToken from './api/utils/get-user-token';
 import getSession from './api/get-session';
@@ -6,6 +6,7 @@ import scrobble from './api/scrobble';
 import { on } from '../../source/modules/Port/background';
 import { playingNow } from './api/playingNow';
 import { storageGet, storageSet, storageRemove } from '../../source/modules/LocalStorage/storage';
+import { SCROBBLER_STORAGE_KEY } from '../../source/store/scrobbler/constants';
 
 const LASTFM_USER_NAME = 'LASTFM_USER_NAME';
 const LASTFM_SESSION_KEY = 'LASTFM_SESSION_KEY';
@@ -38,6 +39,16 @@ on(LASTFM_AUTH, async () => {
     sessionKey = sessionKey ? sessionKey : await getSessionKey();
 
     return sessionKey;
+});
+
+on(LASTFM_RESET, async () => {
+    try {
+        await storageRemove([LASTFM_USER_NAME, LASTFM_SESSION_KEY, SCROBBLER_STORAGE_KEY])
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
 });
 
 on(LASTFM_SCROBBLE, async data => {

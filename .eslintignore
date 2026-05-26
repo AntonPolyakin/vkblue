@@ -1,6 +1,0 @@
-devBuild
-prodBuild
-builds
-/devBuild/
-/prodBuild/
-*.ts

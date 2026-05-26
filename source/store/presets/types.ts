@@ -7,8 +7,14 @@ export type Preset = {
     custom?: boolean;
 };
 
+export type PresetId = string;
+
+export type PresetList = {
+    [presetId: PresetId]: Preset
+};
+
 export type PresetsStore = {
-    presets: Preset[];
-    current: number;
+    presets: PresetList;
+    currentId: PresetId | null;
     auto: boolean;
 };

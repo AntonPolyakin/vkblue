@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import CSSModules from 'react-css-modules';
 import ClassNames from 'classnames';
 import Select from './Select/component';
+import PopupMenu from './PopupMenu/component';
 import Checkbox from '../../Checkbox/component';
 import Filters from './Filters/component';
 import styles from './styles.scss';
@@ -24,7 +25,8 @@ import {
   getSettingsSurroundEnabled,
 } from '../../../../store/settings/selectors';
 import { getPresetsPresets, getPresetsAuto, getPresetsCurrent } from '../../../../store/presets/selectors';
-import { deletePreset, updateAutoPreset, updateCurrentPreset } from '../../../../actionCreators/presets';
+import { deletePreset, updateAutoPreset, updateCurrentPreset, updatePreset } from '../../../../actionCreators/presets';
+import { jsxJoin } from '../../../../utils/jsx-utils';
 
 const EFFECTS = [
   { name: 'ambience', text: 'Ambience' },
@@ -213,6 +215,8 @@ class BigEqualizer extends PureComponent {
     });
   }
 
+
+
   render() {
     const { effects, onAddPreset, onChangeSurround, onToggleEffects, onChangeGainEffect } = this;
     const {
@@ -224,17 +228,30 @@ class BigEqualizer extends PureComponent {
       gainEffect = 0.5,
       presetsUpdateAuto,
       presetsDeletePreset,
+      presetsUpdatePreset,
       presetsUpdateCurrent,
       settingsSurround,
       settingsCompressor,
       enabled,
+      filters
     } = this.props;
     const { showEffects } = this.state;
     let backgroundColor;
-    Array.from(window.document.querySelectorAll('.page_block')).some(pB => {
+    Array.from(window.document.querySelectorAll('#spa_layout_content section')).some(pB => {
       backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
       return true;
     });
+
+    let isOriginalDefault = presets['default'] && [...new Set(presets['default'].values)].length === 1;
+
+    const updateDefaultPreset = (preset) => {
+      let defaultPresetValues = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let presetValues = preset?.values || defaultPresetValues;
+      let newPreset = { values: presetValues };
+      let presetId = 'default';
+
+      presetsUpdatePreset(newPreset, presetId);
+    }
 
     return (
       <div styleName="wrapper">
@@ -247,23 +264,73 @@ class BigEqualizer extends PureComponent {
               onDelete={presetsDeletePreset}
             />
           </div>
-          {current === -1 ? (
-            <div styleName="new">
-              <span onClick={onAddPreset}>Сохранить</span>
-            </div>
-          ) : null}
-          <div styleName="autodetect">
-            <Checkbox value={auto} onChange={({ value }) => presetsUpdateAuto(value)}>
-              Определять автоматически
-            </Checkbox>
+          <div styleName="links">
+            {jsxJoin(
+              [
+                current === null && (
+                  <div key="save" styleName="new">
+                    <span onClick={onAddPreset}>Сохранить</span>
+                  </div>
+                ),
+                current === null && (
+                  <div key="default" styleName="new">
+                    <span onClick={() => {
+                      updateDefaultPreset({ values: filters });
+                      presetsUpdateCurrent('default');
+                    }}>Сделать по умолчанию</span>
+                  </div>
+                ),
+                current === 'default' && !isOriginalDefault && (
+                  <div key="reset" styleName="new">
+                    <span onClick={() => updateDefaultPreset()}>Сбросить по умолчанию</span>
+                  </div>
+                )
+              ],
+              <span styleName="separator">|</span>
+            )}
           </div>
+
+          {/* <div styleName="autodetect">
+            <Checkbox value={auto} onChange={({ value }) => presetsUpdateAuto(value)}>
+              Автоопределение
+            </Checkbox>
+          </div> */}
+
+          <PopupMenu
+            trigger={
+              <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M24 12C26.2091 12 28 10.2091 28 8C28 5.79086 26.2091 4 24 4C21.7909 4 20 5.79086 20 8C20 10.2091 21.7909 12 24 12ZM24 28C26.2091 28 28 26.2091 28 24C28 21.7909 26.2091 20 24 20C21.7909 20 20 21.7909 20 24C20 26.2091 21.7909 28 24 28ZM28 40C28 42.2091 26.2091 44 24 44C21.7909 44 20 42.2091 20 40C20 37.7909 21.7909 36 24 36C26.2091 36 28 37.7909 28 40Z"
+                />
+              </svg>
+            }
+          >
+            {({ close }) => (
+              <ul styleName="popup-menu-list">
+                <li styleName="popup-menu-item">
+                  <Checkbox
+                    value={auto}
+                    onChange={({ value }) => {
+                      presetsUpdateAuto(value);
+                      //close();
+                    }}
+                  >
+                    Автоопределение
+                  </Checkbox>
+                </li>
+              </ul>
+            )}
+          </PopupMenu>
+
         </div>
         <div styleName={ClassNames('equalizer-wrapper', { disabled: !enabled })}>
           <Filters />
         </div>
         <div styleName={ClassNames('effects-wrapper', { opened: showEffects })} style={{ backgroundColor }}>
           <span onClick={onToggleEffects} style={{ backgroundColor }}>
-            Effects
+            Эффекты
           </span>
           <div styleName="effects">
             <ul>
@@ -314,6 +381,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   presetsUpdateAuto: updateAutoPreset,
   presetsUpdateCurrent: updateCurrentPreset,
+  presetsUpdatePreset: updatePreset,
   presetsDeletePreset: deletePreset,
   openLightBox,
   equalizerUpdateSurround,

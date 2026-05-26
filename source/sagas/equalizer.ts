@@ -27,7 +27,7 @@ export function* watchEqualizerLoad() {
 function* handleEqualizerUpdateFilters(action: ReturnType<typeof updateBiquadFilters>) {
     yield put(presetsUpdateAuto(false));
     yield put(equalizerUpdateBiquadFilters(action.data));
-    yield put(presetsUpdateCurrent(-1));
+    yield put(presetsUpdateCurrent(null));
 
     const state: GlobalStore = yield select();
     yield call(storageSet, PRESETS_STORAGE_KEY, state.presets);

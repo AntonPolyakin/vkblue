@@ -9,10 +9,12 @@ import CloseIcon from './images/close.png';
 import { SettingsStore } from '../../store/settings/types';
 import { updateSettings } from '../../actionCreators/settings';
 import { getPresetsPresets } from '../../store/presets/selectors';
-import { Preset } from '../../store/presets/types';
+import { Preset, PresetList } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
-import { clampToRange } from '../../utils/utils';
+import { clampToRange, getRandomString, stringifyCustom } from '../../utils/js-utils';
+import { reset } from '../../../modules/LastFMScrobbler/content';
+import { presets as defaultPresets } from '../../../source/store/presets/reducer';
 
 const _Checkbox: any = require('../../content/components/Checkbox/component').default;
 
@@ -40,8 +42,8 @@ const Footer = styled.div`
     height: 54px;
     line-height: 54px;
     padding: 0px 25px;
-    border-top: 1px solid rgb(231, 232, 236);
-    background: rgb(250, 251, 252);
+    border-top: 1px solid var(--vkui--color_image_placeholder, rgb(250, 251, 252));
+    background: var(--vkui--color_image_placeholder, rgb(250, 251, 252));
 
     p {
         margin: 0;
@@ -69,7 +71,7 @@ const Body = styled.div`
     max-height: 50vh;
 
     h3 {
-        color: #000;
+        color: var(--vkui--color_text_primary, #000);
         margin: 0 0 10px;
         font-size: 15px;
     }
@@ -216,7 +218,7 @@ const Label = styled.label`
     input {
         height: 20px;
         width: 45px;
-        color: black !important;
+        color: var(--vkui--color_text_primary,#000) !important;
         border-radius: 2px;
         border: 1px solid rgba(128, 128, 128, 0.5);
         box-shadow: none;
@@ -239,18 +241,19 @@ const ResetAppButton = styled.span`
 
 interface ConfigProps {
     settings: SettingsStore;
-    presets: Preset[];
+    presets: PresetList;
     closeLightBox(): void;
     changeSettings(data: SettingsStore): void;
-    updatePresets(presets: Preset[]): void;
+    updatePresets(presets: PresetList): void;
 }
 
-const presetsIsValid: (presets: Preset[]) => boolean = presets => {
-    if (presets.length < 1) {
+const presetsIsValid: (presets: PresetList) => boolean = presets => {
+    let presetsArray = Object.values(presets);
+    if (presetsArray.length < 1) {
         throw Error('Presets must be exist!');
     }
 
-    return presets.every(preset => {
+    return presetsArray.every(preset => {
         if (!preset.name) {
             throw Error(`Preset: name must be exist!`);
         }
@@ -303,15 +306,22 @@ const Config: React.FunctionComponent<ConfigProps> = ({
         settings.equalizerCompressorRelease,
     );
 
-    const presetsHref =
-        'data:text/json;charset=utf-8,' +
-        encodeURIComponent(
-            JSON.stringify(presets.map(({ values, name, genres }) => ({ values: values.map(value=>clampToRange(+value || 0, [-1, 1])), name, genres })))
-                .replace(/,"/g, ',\n"')
-                .replace(/},/g, '\n},\n')
-                .replace(/{/g, '{\n')
-                .replace(/}]/g, '\n}]'),
-        );
+    let jsonStr = stringifyCustom({
+        presets
+    }, {
+        presets: (value) => {
+            let end = '\n ';
+            return JSON.stringify(value)
+                .replace(/^{/g, (`{${end}`))
+                .replace(/,"/g, (`,${end}"`))
+                .replace(/},/g, (`${end}},${end}`))
+                .replace(/{/g, (`{${end}`))
+                .replace(/}]/g, (`${end}}]`))
+                .replace(/}}/g, (`${end}}${end}${end}}`));
+        }
+    }, 1);
+
+    const presetsHref = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
 
     return (
         <SettingsWrapper>
@@ -509,11 +519,10 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                             const reader = new FileReader();
                                             reader.onload = onLoadFileEvent => {
                                                 try {
-                                                    const result = onLoadFileEvent.target.result as string;
-                                                    const newPresets = JSON.parse(result).map(preset => {
-                                                        preset.values = preset.values.map(value=>clampToRange(+value || 0, [-1, 1]))
-                                                        return preset;
-                                                    }) as Preset[];
+                                                    const result = (onLoadFileEvent.target as any).result as string;
+                                                    let json = JSON.parse(result);
+                                                    let presets = json?.presets || json;
+                                                    const newPresets = normalizePresets(presets);
 
                                                     if (presetsIsValid(newPresets)) {
                                                         setNewPresets(newPresets);
@@ -522,7 +531,7 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                                                     alert(`Упс! Не валидный файл пресетов! Ошибка: ${e}`);
                                                 }
                                             };
-                                            reader.readAsText(onChangeInputEvent.target.files[0], 'utf8');
+                                            reader.readAsText((onChangeInputEvent.target as any).files[0], 'utf8');
                                         }}
                                     />
                                     <InputLabelEmpty>Импорт</InputLabelEmpty> настроек эквалайзера (.json) <br />
@@ -559,6 +568,10 @@ const Config: React.FunctionComponent<ConfigProps> = ({
                     onClick={() => {
                         updatePresets(newPresets);
 
+                        if (settings.scrobbler && !scrobbler) {
+                            reset();
+                        }
+
                         changeSettings({
                             equalizer,
                             equalizerAnalyser,
@@ -582,6 +595,34 @@ const Config: React.FunctionComponent<ConfigProps> = ({
         </SettingsWrapper>
     );
 };
+
+function normalizePresets(presets: PresetList | Preset[]): PresetList {
+    let presetsArray;
+    let presetsIds;
+
+    if (Array.isArray(presets)) {
+        presetsArray = presets;
+        presetsIds = [];
+    } else if (typeof presets == 'object') {
+        presetsArray = Object.values(presets);
+        presetsIds = Object.keys(presets);
+    }
+
+    return presetsArray?.reduce((prev, preset: Preset) => {
+        let presetId = presetsIds.find(item => presets[item] == preset) || Object.keys(defaultPresets).find(key => {
+            return defaultPresets[key]?.name == preset?.name;
+        }) || getRandomString(32);
+
+        let { values, name, genres, custom } = preset;
+        prev[presetId] = {
+            values: values.map(value => clampToRange(+value || 0, [-1, 1])),
+            name,
+            genres,
+            custom
+        };
+        return prev;
+    }, {}) || {};
+}
 
 const mapStateToProps = (state: GlobalStore) => ({
     settings: getSettings(state),

@@ -4,6 +4,7 @@
   padding: 10px;
   box-sizing: border-box;
   position: relative;
+  
 
   .power {
     background-image: url("images/power-on.svg");
@@ -40,14 +41,9 @@
     //margin: 0 10px 0 15px;
     height: 25px;
     box-sizing: border-box;
-
-    &:after {
-      content: "";
-      display: block;
-      clear: both;
-    }
+    display: flex;
+    gap: 10px;
     .autodetect {
-      float: right;
       box-sizing: border-box;
       height: 25px;
       padding: 4px 9px 0px 0px;
@@ -56,24 +52,31 @@
       line-height: 25px;
     }
     .genres {
-      float: left;
       box-sizing: border-box;
       width: 130px;
       text-transform: capitalize;
     }
+    .links {
+      gap: 5px;
+      align-items: center;
+      flex: 1;
+      display: flex;
+    }
     .new {
-      float: left;
-      height: 25px;
-      margin: 0 0 0 5px;
-
+      height: auto;
+      text-align: center;
       span {
-        line-height: 25px;
+        line-height: normal;
         font-size: 11px;
         color: #2a5885;
         cursor: pointer;
         text-decoration: underline;
       }
     }
+  }
+  .separator {
+    display: inline-block;
+    color: #aaa;
   }
   .effects-wrapper {
     transition: all 0.5s ease;
@@ -83,6 +86,7 @@
     bottom: -77px;
     height: 77px;
     padding: 20px 0 0;
+    background-color: var(--vkui--color_background_content, white);
 
     &.opened {
       bottom: 0;
@@ -134,7 +138,7 @@
         padding: 0;
         list-style: none;
         width: 100%;
-        
+
         li {
           transition: all 0.5s ease;
           flex: 1;
@@ -189,8 +193,7 @@
         }
         .dolby {
           position: relative;
-          background: url('images/dolby.svg')
-            no-repeat center 5px;
+          background: url("images/dolby.svg") no-repeat center 5px;
           background-size: 36px auto;
           &:after {
             border-right: 1px solid #e7e8ec;
@@ -204,23 +207,19 @@
         }
 
         .ambience {
-          background:  url('images/ambience.svg')
-            no-repeat center top;
+          background: url("images/ambience.svg") no-repeat center top;
           background-size: 31px;
         }
         .plate {
-          background:  url('images/plate.svg')
-            no-repeat center top;
+          background: url("images/plate.svg") no-repeat center top;
           background-size: 30px auto;
         }
         .hall {
-          background:  url('images/hall.svg')
-            no-repeat center top;
+          background: url("images/hall.svg") no-repeat center top;
           background-size: 31px;
         }
         .space {
-          background:  url('images/space.svg')
-            no-repeat center top;
+          background: url("images/space.svg") no-repeat center top;
           background-size: 31px;
         }
       }
@@ -369,7 +368,8 @@ https://toughengineer.github.io/demo/slider-styler*/
         }
       }
 
-      &:disabled,&[disabled]{
+      &:disabled,
+      &[disabled] {
         user-select: none;
       }
     }

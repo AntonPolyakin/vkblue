@@ -83,7 +83,7 @@
       }
     }
   }
-  &:focus {
+  &.opened {
     .select-input {
       background-color: var(--vkui--color_background_content--hover, #f5f7fa);
       //&:after {
