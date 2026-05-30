@@ -1,12 +1,13 @@
-import { ConvolverEffect, EqualizerStore, FilterValues } from './types';
+import { ConvolverEffect, EqualizerStore, FilterValues, PitchSettings } from './types';
 import {
     EQUALIZER__UPDATE,
     EQUALIZER__UPDATE_BIQUAD_FILTERS,
     EQUALIZER__UPDATE_EFFECT_GAIN,
     EQUALIZER__UPDATE_EFFECT_NAME,
+    EQUALIZER__UPDATE_PITCH_SETTINGS,
     EQUALIZER__UPDATE_SURROUND,
 } from './constants';
-import { updateEffectGain, updateEffectName, updateFilters, updateSurround } from '../../modules/equalizer';
+import { updateEffectGain, updateEffectName, updateFilters, updatePitchSettings, updateSurround } from '../../modules/equalizer';
 
 export const equalizerUpdateEffectName = (data: ConvolverEffect) => {
     updateEffectName(data);
@@ -47,3 +48,12 @@ export const equalizerUpdateBiquadFilters = (
 };
 
 export const equalizerUpdate = (data: EqualizerStore) => ({ type: EQUALIZER__UPDATE, data } as const);
+
+export const equalizerUpdatePitchSettings = (settings: Partial<PitchSettings>) => {
+    updatePitchSettings(settings as any);
+
+    return {
+        type: EQUALIZER__UPDATE_PITCH_SETTINGS,
+        data: settings,
+    } as const;
+};

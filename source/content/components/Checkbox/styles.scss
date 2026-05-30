@@ -5,7 +5,8 @@ $full_height: 18px;
 .checkbox-wrapper {
   line-height: $full_height;
   height: $full_height;
-  overflow: hidden;
+  display: inline-flex;
+  overflow: inherit;
 
   .checkbox-input {
     cursor: pointer;
@@ -29,7 +30,8 @@ $full_height: 18px;
   .checkbox-label {
     cursor: pointer;
     display: inline-block;
-    height: $full_height;
+    //height: $full_height;
+    height: auto;
     position: relative;
     //top: 1px;
     font-size: 11px;

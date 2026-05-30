@@ -1,4 +1,4 @@
-import { ConvolverEffect, EqualizerStore, FilterValues } from './types';
+import { ConvolverEffect, EqualizerStore, FilterValues, PitchSettings } from './types';
 import { GlobalStore } from '../index';
 
 export const getEqualizer: (state: GlobalStore) => EqualizerStore = ({ equalizer }) => equalizer;
@@ -24,3 +24,13 @@ export const getEqualizerConvolverEffect: (state: GlobalStore) => ConvolverEffec
     equalizer.convolverEffect;
 
 export const getEqualizerConvolverGain: (state: GlobalStore) => number = ({ equalizer }) => equalizer.convolverGain;
+
+export const getEqualizerPitchSettings: (state: GlobalStore) => PitchSettings = ({ equalizer }) => ({
+    pitchValueSemitones: equalizer.pitchValueSemitones,
+    pitchValueCents: equalizer.pitchValueCents,
+    windowSizeMilliseconds: equalizer.windowSizeMilliseconds,
+    applySmartProcessing: equalizer.applySmartProcessing,
+    speedUnits: equalizer.speedUnits,
+    speedFine: equalizer.speedFine,
+    preservePitch: equalizer.preservePitch,
+});

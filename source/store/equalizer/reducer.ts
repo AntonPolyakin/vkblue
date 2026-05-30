@@ -1,5 +1,5 @@
 import { EqualizerStore } from './types';
-import { EQUALIZER__UPDATE, EQUALIZER__UPDATE_BIQUAD_FILTERS, EQUALIZER__UPDATE_EFFECT_GAIN, EQUALIZER__UPDATE_EFFECT_NAME, EQUALIZER__UPDATE_SURROUND } from './constants';
+import { EQUALIZER__UPDATE, EQUALIZER__UPDATE_BIQUAD_FILTERS, EQUALIZER__UPDATE_EFFECT_GAIN, EQUALIZER__UPDATE_EFFECT_NAME, EQUALIZER__UPDATE_SURROUND, EQUALIZER__UPDATE_PITCH_SETTINGS } from './constants';
 import { InferValueTypes } from '../types';
 import * as actionCreators from './actionCreators';
 
@@ -21,6 +21,14 @@ export const getDefaultEqualizer: () => EqualizerStore = () => ({
     convolverGain: 0,
 
     surround: true,
+
+    pitchValueSemitones: 0,
+    pitchValueCents: 0,
+    windowSizeMilliseconds: 120,
+    applySmartProcessing: true,
+    speedUnits: 0,
+    speedFine: 0,
+    preservePitch: true,
 });
 
 export const equalizer: (state: EqualizerStore, action: EqualizerActions) => EqualizerStore = (
@@ -54,6 +62,9 @@ export const equalizer: (state: EqualizerStore, action: EqualizerActions) => Equ
         }
         case EQUALIZER__UPDATE_SURROUND: {
             return { ...state, surround: action.data };
+        }
+        case EQUALIZER__UPDATE_PITCH_SETTINGS: {
+            return { ...state, ...action.data };
         }
         default: {
             return state;

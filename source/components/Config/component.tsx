@@ -118,6 +118,9 @@ const Checkbox = styled(_Checkbox)`
     & > span {
         margin-right: 10px;
         color: #666;
+        overflow: initial;
+        display: inline-flex;
+        height: auto;
 
         &:first-child {
             height: 18px;
