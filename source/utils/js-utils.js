@@ -349,3 +349,49 @@ export function matchURLPatterns(url, urlPatterns) {
     return url.match(new RegExp('^' + escapeString(pattern, 1).replace(/\\\*/gim, '.*') + '$', ''));
   });
 }
+
+
+/**
+ * Parses a URL string into its components, such as protocol, hostname, pathname, query parameters, and more.
+ * 
+ * @param {string} str - The URL string to parse.
+ * @return {Object} - An object containing the parsed components of the URL.
+ * @tags #url #parsing #utility
+ */
+export function parseURL(str) {
+  const parseUrl = /^(?<href>(?:(?<scheme>(?:view-source|blob):))?(?<protocol>(?:http|https|ftp|ftps|file|urn|chrome|browser|chrome-extension|moz-extension|chrome-error|devtools|view-source|about|javascript|data|postgres|mysql|ws|wss|[A-Za-z][A-Za-z0-9+.-]*)(?<!localhost\b):(?=[^\s]+))(?:(?:(?:\/\/)?(?<auth>(?<username>(?:[A-Za-z0-9._~!$&'()*+,;=\-]|%[0-9A-Fa-f]{2})*)(?::(?<password>(?:[A-Za-z0-9._~!$&'()*+,;=:\-]|%[0-9A-Fa-f]{2})*))?@)?(?<host>(?<hostname>(?<=\/\/|@)(?:(?<ip>\d{1,3}(?:\.\d{1,3}){3}(?![.\d]))|(?![\p{N}.]{1,3}\.)(?:(?:(?<subdomains>(?:[\p{L}\p{N}\p{S}][\p{L}\p{N}\p{S}\p{M}-]*[\p{L}\p{N}\p{S}\p{M}]?\.)*)?(?<secondLevelDomain>[\p{L}\p{N}\p{S}](?:[\p{L}\p{N}\p{S}\p{M}-]*[\p{L}\p{N}\p{S}\p{M}])?)\.(?<topLevelDomain>(?=[\p{L}\p{N}\p{S}\p{M}-]*\p{L})[\p{L}\p{N}\p{S}](?:[\p{L}\p{N}\p{S}\p{M}-]*[\p{L}\p{N}\p{S}\p{M}])?))|(?:[\p{L}\p{N}\p{S}\p{M}-]*[\p{L}\p{N}\p{S}\p{M}])))(?=[^\p{L}\p{N}_]|$))?(?::(?<port>\d+))?)?(?<!\/\/\b|@|-|\.)(?<pathname>(?!\/\/|-|\.)(?:\/{0,}[-,\/%_.~+()'"&@:;\p{L}\p{N}\p{S}\p{M}\p{Pc}\p{Pd} ]+)+)?(?:(?<search>\?[:;&\p{L}\d%_.,~+=\-\/ ]*))?(?:(?<hash>#[\p{L}\d_\-\?&=]*))?)))$/gum;
+  
+  const regex = parseUrl;
+  const match = regex.exec(str);
+  if (!match) return null;
+
+  const g = match.groups;
+
+  const obj = {
+    href: g.href,//http://a:b@www.example.com:123/foo/bar.html?fox=trot#foo
+    origin: g.host
+      ? `${g.scheme || ''}${g.protocol}//${g.username ? g.username + (g.password ? ':' + g.password : '') + '@' : ''}${g.host}${g.port ? ':' + g.port : ''}`
+      : null, //http://a:b@www.example.com:123 (with username and password)
+    protocol: g.protocol, //http 
+    scheme: g.scheme, //view-source: (deprecated)
+    auth: g.scheme, //a:b@ (deprecated)
+    username: g.username, //a
+    password: g.password, //b
+    host: g.host, //www.example.com:123
+    hostname: g.hostname, //www.example.com
+    ip: g.ip, //123.123.123.123 (deprecated)
+    subdomain: g.subdomains ? g.subdomains?.split('.')?.[0] : undefined, //www (deprecated)
+    subdomains: g.subdomains, //www. (deprecated)
+    domain: g.secondLevelDomain && g.topLevelDomain
+      ? `${g.secondLevelDomain}.${g.topLevelDomain}`
+      : null, //example.com (deprecated)
+    domainName: g.secondLevelDomain, //example (deprecated)
+    topLevelDomain: g.topLevelDomain, //com (deprecated)
+    port: g.port, //123
+    pathname: g.pathname, // /foo/bar.html
+    queryParams: g.search ? g.search.slice(1) : undefined, //fox=trot 
+    hash: g.hash ? g.hash.slice(1) : undefined // foo
+  };
+
+  return obj;
+}
