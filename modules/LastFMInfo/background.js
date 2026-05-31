@@ -13,6 +13,8 @@ import { on } from '../../source/modules/Port/background';
 import { TRACKS_STORAGE_KEY } from '../../source/store/tracks/constants';
 import { ARTISTS_STORAGE_KEY } from '../../source/store/artists/constants';
 
+import { fetchWebArchive } from './utils/web_archive';
+
 const getArtistKey = ({ artist = '' }) => `${artist.toLowerCase()}`;
 const getTrackKey = ({ artist = '', title = '' }) => `${artist.toLowerCase()}-${title.toLowerCase()}`;
 
@@ -60,7 +62,11 @@ on(LASTFM_GET_INFO, async request => {
 
         artistResult.image = await new Promise(async resolve => {
             try {
-                const res = await fetch(artistResult.url);
+                const artistUrl = artistResult.url;
+                if (!artistUrl) {
+                    throw null;
+                }
+                const res = await fetchWebArchive(artistUrl);
                 const body = await res.text();
 
                 const $ = cheerio.load(body);

@@ -494,7 +494,7 @@ class BigEqualizer extends PureComponent {
                 </div>
 
                 <div styleName="pitch-control">
-                  <label>Размер блока: <span>{windowSizeMilliseconds}</span> (миллисекунды)</label>
+                  <label>Размер блока: <span>{windowSizeMilliseconds}</span> (мс)</label>
                   <input
                     ref={el => (this.pitchRefs[2] = el)}
                     className={`${styles['styled-slider']} ${styles['slider-progress']}`}

@@ -1,25 +1,16 @@
-export default function(search) {
+import browser from 'webextension-polyfill';
+
+export default function (search) {
     if (typeof search !== 'string') {
-        return;
+        return { type: '@@NOOP' };
     }
 
-    var script = document.createElement('script');
+    const script = document.createElement('script');
+    script.src = browser.runtime.getURL('search_album_redirect_injection.js');
+    script.dataset.search = search;
     script.id = 'vk_lyrics_chrome_extension_script';
-    script.innerHTML = `
-            nav && nav.change && nav.change(
-                { 
-                    q: "${search}", 
-                    performer: 0
-                }, 
-                new CustomEvent('empty_event'), 
-                {   
-                    searchPerformer: true
-                }
-            );
-                
-            var script = window.document.querySelector('#${script.id}');
-            script.remove();
-        `;
 
-    document.body.appendChild(script);
+    document.documentElement.appendChild(script);
+
+    return { type: 'SEARCH_ALBUM_STARTED', payload: search };
 }

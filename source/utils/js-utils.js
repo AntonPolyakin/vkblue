@@ -328,3 +328,24 @@ export function stringifyCustom(obj, formatters = {}, space) {
             }
         );
 }
+
+/**
+ * Matches a URL against one or more URL patterns, supporting wildcard (`*`) matching.
+ * 
+ * @param {string} url - The URL to test.
+ * @param {string | string[]} urlPatterns - A single pattern or an array of patterns to match against.
+ * @return {boolean} - `true` if the URL matches any of the patterns, otherwise `false`.
+ * @tags #url #matching #utility
+ */
+export function matchURLPatterns(url, urlPatterns) {
+
+  function escapeString(str, slashLength = 2) {
+    return str.replace(new RegExp('[-[\\]{}()*+?&.,\\\\^$|#\'\"]', 'gim'), (`${[...new Array(slashLength)].map(i => '\\').join('')}$&`));
+  };
+
+  urlPatterns = typeof urlPatterns == 'string' ? [urlPatterns] : urlPatterns || [];
+
+  return urlPatterns?.some(pattern => {
+    return url.match(new RegExp('^' + escapeString(pattern, 1).replace(/\\\*/gim, '.*') + '$', ''));
+  });
+}

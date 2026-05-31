@@ -29,6 +29,7 @@
       opacity: 0.6;
       margin: 0 4px 0 0;
       white-space: nowrap;
+      display: flex;
     }
 
     .title {
@@ -39,6 +40,9 @@
       color: #577ca1;
       cursor: pointer;
       display: inline;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       white-space: nowrap;
 
       &:hover {

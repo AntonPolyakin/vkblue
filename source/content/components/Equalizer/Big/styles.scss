@@ -138,7 +138,7 @@
       padding-bottom: 6px;
 
       h3 {
-        margin: 0px 0px 12px 12px;
+        margin: 0px 0px 12px 20px;
         align-self: baseline;
       }
 
@@ -272,8 +272,8 @@
         width: 100%;
         display: flex;
         flex-direction: row;
-        gap: 6px;
-        justify-content: center;
+        gap: 12px;
+        justify-content: space-between;
 
         .pitch-control {
           display: flex;
@@ -295,7 +295,15 @@
           display: flex;
           flex-direction: column;
           gap: 1px;
-          padding: 0 20px;
+          padding: 0 12px;
+          box-sizing: border-box;
+          width: 220px;
+          &:first-child {
+            padding: 0px 0px 0 20px;
+          }
+          &:last-child {
+            padding: 0px 20px 0 0px;
+          }
         }
 
         .pitch-reset-row {

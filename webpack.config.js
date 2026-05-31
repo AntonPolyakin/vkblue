@@ -94,6 +94,10 @@ const commonConfig = {
             {
                 from: './source/modules/equalizer/assets/js/SignalsmithStretch.min.js',
                 to: './SignalsmithStretch.min.js',
+            },
+            {   
+                from: './source/content/fetch/search_album_redirect_injection.js',
+                to: './search_album_redirect_injection.js',
             }
         ]),
         new ForkTsCheckerWebpackPlugin(),
