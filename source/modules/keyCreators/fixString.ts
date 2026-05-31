@@ -16,7 +16,7 @@ export const fixString: (source: string) => string = source => {
         .replace(/\s*\(.*?\)\s*/g, '')
         .replace(/\s*\[.*?]\s*/g, '')
         .replace(/[^\wа-яёі&.Λ]+/gi, ' ');
-    result = trim(result);
+    result = trim(result).toLowerCase();
 
     return result;
 };

@@ -10,7 +10,7 @@ export const BigLyrics = CSSModules(
         if (!text || (typeof text === 'string' && text.indexOf('title="Special:Random"') > 0)) {
             return (
                 <Empty
-                    text={`Ой.. Нет слов :( <br/> Попробуйте добавить текст на <a href="https://www.genius.com" target="_blank">genius.com</a> или <a href="https://www.gl5.ru" target="_blank">gl5.ru</a><br/> чтобы мы могли найти его.`}
+                    text={`Ой.. Нет слов :( <br/> Попробуйте добавить текст на <a href="https://www.genius.com" target="_blank">genius.com</a> чтобы мы могли найти его.`}
                 />
             );
         }

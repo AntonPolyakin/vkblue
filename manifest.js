@@ -13,7 +13,6 @@ const hostPermissions = [
     '*://vk.com/*',
     '*://m.vk.com/*',
     //lyrics
-    '*://www.gl5.ru/*',
     '*://www.megalyrics.ru/*',
     '*://megalyrics.ru/*',
     '*://genius.com/*',
