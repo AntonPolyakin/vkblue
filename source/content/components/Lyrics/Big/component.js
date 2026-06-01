@@ -5,6 +5,12 @@ import Empty from '../../Empty/component';
 
 import styles from './styles.scss';
 
+function formatLyrics(text = '') {
+    return text
+        .replace(/(\[[^\]]+\])/g, '<span class="lyrics-meta">$1</span>')
+        .replace(/\n/g, '<br/>');
+}
+
 export const BigLyrics = CSSModules(
     ({ text }) => {
         if (!text || (typeof text === 'string' && text.indexOf('title="Special:Random"') > 0)) {
@@ -15,10 +21,12 @@ export const BigLyrics = CSSModules(
             );
         }
 
+        const html = typeof text === 'string' ? formatLyrics(text) : text;
+
         return (
             <div styleName="wrapper">
                 <div styleName="content">
-                    <p styleName="text" dangerouslySetInnerHTML={{ __html: text }} />
+                    <p styleName="text" dangerouslySetInnerHTML={{ __html: html }} />
                 </div>
             </div>
         );

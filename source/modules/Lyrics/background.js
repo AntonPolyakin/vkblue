@@ -13,21 +13,29 @@ import { fetchWebArchive } from '../../../modules/LastFMInfo/utils/web_archive';
 
 const manifest = browser.runtime.getManifest();
 
-const cheerioObjectToText = cheerioObject => {
-    cheerioObject.find('p, div, section').append('<br/>');
-    cheerioObject.find('br').replaceWith('\n');
+const cheerioObjectToText = (cheerioObject) => {
+    const parts = cheerioObject
+        .map((_, el) => {
+            const $el = cheerioObject.eq(_);
 
-    const text = cheerioObject.text();
+            $el.find('p, div, section').append('<br/>');
+            $el.find('br').replaceWith('\n');
 
-    return text
-        .replace(/[^\S\r\n]+/g, ' ')
-        .replace(/[\n]+/g, '\n')
-        .replace(/\n /g, '\n');
+            return $el
+                .text()
+                .trim()
+                .replace(/[^\S\r\n]+/g, ' ')
+                .replace(/[\n]{2,}/g, '\n\n')
+                .replace(/\n /g, '\n');
+        })
+        .get();
+
+    return parts.join('\n');
 };
 
 const SITES = [
     {
-        url: 'gl5.ru',
+        host: 'gl5.ru',
         getLyrics: $ => {
             const $text = $('[itemprop="text"]');
             $text.find('a').replaceWith('\n');
@@ -56,21 +64,32 @@ const SITES = [
         },
     },
     {
-        url: 'megalyrics.ru',
+        host: 'megalyrics.ru',
         getLyrics: $ => cheerioObjectToText($('.text_inner')),
     },
     {
-        url: 'lyricshare.net',
+        host: 'lyricshare.net',
         getLyrics: $ => cheerioObjectToText($('.textpesnidiv')),
     },
     {
-        url: 'genius.com',
-        regExp: /^https?:\/\/(?:rap\.|rock\.|pop\.)?(?:rap)?genius\.com\/(?:[^\/]+-lyrics\/?|\d+)/,
+        host: 'genius.com',
+        urlRegExp: /^https?:\/\/(?:rap\.|rock\.|pop\.)?(?:rap)?genius\.com\/(?:[^\/]+-lyrics\/?|\d+)/,
         getLyrics: $ => {
             $('[class^="Lyrics__Container"]').find('[class^="LyricsHeader__Container"]').remove();
             return cheerioObjectToText($('[class^="Lyrics__Container"], .lyrics'));
         },
-    },
+        getUrl: ({ artist, title }) => {
+            const key = createArtistAndTitleKey(artist, title);
+
+            let urlKey = key
+                .replace(/--/gim, '-')
+                .replace(/ /gim, '-')
+                .replace(/'/gim, '')
+                .replace(/(?<=[^\p{Script=Latin}\p{N}])\p{L}(?<=[^\p{Script=Latin}\p{N}])/gu, '');
+
+            return `https://genius.com/${urlKey}-lyrics`;
+        },
+    }
 ];
 
 const findLinks = (cheerioLinks, artist, title) => {
@@ -89,12 +108,12 @@ const findLinks = (cheerioLinks, artist, title) => {
     return results
         .map(result => result.item.href)
         .filter(link =>
-            SITES.find(site => (site.regExp ? site.regExp.test(link) : link ? link.includes(site.url) : null)),
+            SITES.find(site => (site.urlRegExp ? site.urlRegExp.test(link) : link ? link.includes(site.host) : null)),
         );
 };
 
 const fetchLyrics = async (url, fromWebArchive) => {
-    const getLyrics = SITES.find(site => url.includes(site.url)).getLyrics;
+    const getLyrics = SITES.find(site => url.includes(site.host)).getLyrics;
     return new Promise(async resolve => {
         try {
             const res = await (fromWebArchive ? fetchWebArchive : fetch)(url);
@@ -129,18 +148,18 @@ const defaultSearchBlacklist = {
     "searx.oloke.xyz": SEARCH_BLACKLIST_LIMIT, //captcha
 };
 
-const searxBlacklist = {
+const searchBlacklist = {
     ...defaultSearchBlacklist
 };
 
 const isBlacklisted = url => {
     const key = parseURL(url)?.host;
-    return (searxBlacklist[key] || 0) >= SEARCH_BLACKLIST_LIMIT;
+    return (searchBlacklist[key] || 0) >= SEARCH_BLACKLIST_LIMIT;
 };
 
 const saveBlacklist = async () => {
     await storageSet({
-        [SEARCH_BLACKLIST_STORE_NAME]: searxBlacklist,
+        [SEARCH_BLACKLIST_STORE_NAME]: searchBlacklist,
     });
 };
 
@@ -148,7 +167,7 @@ const loadBlacklist = async () => {
     const result = await storageGet(SEARCH_BLACKLIST_STORE_NAME);
     const saved = result?.[SEARCH_BLACKLIST_STORE_NAME];
     if (saved && typeof saved === 'object') {
-        Object.assign(searxBlacklist, saved);
+        Object.assign(searchBlacklist, saved);
     }
 };
 
@@ -156,10 +175,10 @@ const markSearchFailure = async (url, count) => {
     const key = parseURL(url)?.host;
     if (!key) return;
 
-    let value = count != undefined ? (searxBlacklist[key] || 0) + count : (searxBlacklist[key] || 0) + 1;
-    searxBlacklist[key] = clampToRange(value, [0, SEARCH_BLACKLIST_LIMIT]);
+    let value = count != undefined ? (searchBlacklist[key] || 0) + count : (searchBlacklist[key] || 0) + 1;
+    searchBlacklist[key] = clampToRange(value, [0, SEARCH_BLACKLIST_LIMIT]);
 
-    if (searxBlacklist[key] >= SEARCH_BLACKLIST_LIMIT) {
+    if (searchBlacklist[key] >= SEARCH_BLACKLIST_LIMIT) {
         domainPromise = null; // сбросим кэш, чтобы выбрать другой инстанс
     }
 
@@ -167,9 +186,9 @@ const markSearchFailure = async (url, count) => {
 };
 
 const clearSearchBlacklist = async () => {
-    for (const key of Object.keys(searxBlacklist)) {
+    for (const key of Object.keys(searchBlacklist)) {
         if (!Object.keys(defaultSearchBlacklist).includes(key)) {
-            delete searxBlacklist[key];
+            delete searchBlacklist[key];
         }
     }
     domainPromise = null;
@@ -194,11 +213,11 @@ const SEARCH_ENGINES = [
             return (
                 searchUrl +
                 encodeURIComponent(
-                    `слова песни ${title} ${artist} (${SITES.map(site => `site:${site.url}`).join(' OR ')})`,
+                    `слова песни ${title} ${artist} (${SITES.map(site => `site:${site.host}`).join(' OR ')})`,
                 )
             );
         },
-        getUrl({ artist, title, body }) {
+        getLinks({ artist, title, body }) {
             const $ = cheerio.load(body);
             const results = $('#main_results');
             const links = results.find('.result a');
@@ -213,10 +232,10 @@ const SEARCH_ENGINES = [
             const fixedArtist = artist.split(' ').join('+');
 
             return `https://www.startpage.com/do/search?query=слова песни ${fixedTitle} ${fixedArtist} (${SITES.map(
-                site => `host:${site.url}`,
+                site => `host:${site.host}`,
             ).join(' OR ')})`;
         },
-        getUrl({ artist, title, body }) {
+        getLinks({ artist, title, body }) {
             const $ = cheerio.load(body);
             const results = $('.w-gl__result');
             const links = results.find('a');
@@ -230,10 +249,10 @@ const SEARCH_ENGINES = [
             const searchUrl = 'https://uk.ask.com/web?q=';
             return (
                 searchUrl +
-                encodeURIComponent(`${title} ${artist} (${SITES.map(site => `site:${site.url}`).join(' OR ')})`)
+                encodeURIComponent(`${title} ${artist} (${SITES.map(site => `site:${site.host}`).join(' OR ')})`)
             );
         },
-        getUrl({ artist, title, body }) {
+        getLinks({ artist, title, body }) {
             const $ = cheerio.load(body);
             const links = $('.result-link');
 
@@ -246,10 +265,10 @@ const SEARCH_ENGINES = [
             const searchUrl = 'https://www.bing.com/search?q=';
             return (
                 searchUrl +
-                encodeURIComponent(`${title} ${artist} (${SITES.map(site => `site:${site.url}`).join(' OR ')})`)
+                encodeURIComponent(`${title} ${artist} (${SITES.map(site => `site:${site.host}`).join(' OR ')})`)
             );
         },
-        getUrl({ artist, title, body }) {
+        getLinks({ artist, title, body }) {
             const $ = cheerio.load(body);
             const results = $('#b_results');
             const links = results.find('a');
@@ -263,10 +282,10 @@ const SEARCH_ENGINES = [
             const searchUrl = 'https://duckduckgo.com/html?q=';
             return (
                 searchUrl +
-                encodeURIComponent(`${title} ${artist}  (${SITES.map(site => `site:${site.url}`).join(' OR ')})`)
+                encodeURIComponent(`${title} ${artist}  (${SITES.map(site => `site:${site.host}`).join(' OR ')})`)
             );
         },
-        getUrl({ artist, title, body }) {
+        getLinks({ artist, title, body }) {
             const $ = cheerio.load(body);
             const results = $('#links');
             const links = results.find('.result__a');
@@ -289,7 +308,7 @@ const SEARCH_ENGINES = [
                     domain = await getFastestSearxDomain().catch(() => defaultSearchUrl);
                 }
 
-                const query = `${title} ${artist} (${SITES.map(site => `site:${site.url}`).join(' OR ')})`;
+                const query = `${title} ${artist} (${SITES.map(site => `site:${site.host}`).join(' OR ')})`;
                 let body = `q=${encodeURIComponent(query)}&category_general=1&language=all&safesearch=0&theme=simple`;
                 return {
                     url: `${domain}search?${body}`,
@@ -303,7 +322,7 @@ const SEARCH_ENGINES = [
             };
         })()
         ,
-        getUrl: async ({ url, artist, title, body }) => {
+        getLinks: async ({ url, artist, title, body }) => {
             const $ = cheerio.load(body);
             const results = $('#main_results');
             const links = results.find('.result a.url_header');
@@ -407,11 +426,52 @@ browser.runtime.onMessage.addListener(async message => {
             store[key] = undefined;
         }
 
-        let urlKey = key.replace(/--/gim, '-').replace(/ /gim, '-');
-        let noEngineSiteLyrics = await fetchLyrics(`https://genius.com/${urlKey}-lyrics`);
+        let directSiteData = await (async () => {
+            let host = 'genius.com';
+            let site = SITES.find(item => item.host == host);
 
-        if (noEngineSiteLyrics) {
-            lyrics = noEngineSiteLyrics;
+            let searchResults, url, lyrics;
+
+            try {
+                searchResults = await (await fetch(`https://genius.com/api/search/song?page=1&q=${key}`, {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                        "accept-language": "ru,en;q=0.9",
+                        "cache-control": "no-cache",
+                        "pragma": "no-cache",
+                        "priority": "u=1, i",
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    "body": null,
+                    "method": "GET",
+                    "mode": "cors",
+                    "credentials": "include"
+                })).json();
+
+                url = searchResults?.response?.sections?.[0]?.hits?.[0]?.result?.url;
+            } catch (error) {
+                console.log(error);
+            }
+
+            if (!url) {
+                url = site.getUrl({ artist: data.artist, title: data.title });
+            }
+
+            try {
+                lyrics = await fetchLyrics(url);
+            } catch (error) {
+                try {
+                    lyrics = await fetchLyrics(url, true);
+                } catch (error) {
+                    lyrics = null;
+                }
+            }
+
+            return { host, site, url, lyrics };
+        })();
+
+        if (directSiteData?.lyrics) {
+            lyrics = directSiteData?.lyrics;
         } else {
             let engines = getSearchEngines(['searx']);
 
@@ -435,7 +495,7 @@ browser.runtime.onMessage.addListener(async message => {
 
                         const body = await res.text();
 
-                        const urls = await engine.getUrl({ url: res.url, artist: data.artist, title: data.title, body });
+                        const urls = await engine.getLinks({ url: res.url, artist: data.artist, title: data.title, body });
                         if (urls.length === 0) {
                             return resolve(null);
                         }
