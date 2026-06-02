@@ -4,7 +4,7 @@ import styles from './styles.scss';
 
 function formatLyrics(text = '') {
     return text
-        .replace(/(\[[^\]]+\])/g, '')
+        .replace(/(\[[^\[\]]*\])/g, '')
 }
 
 export const SmallLyrics = CSSModules(

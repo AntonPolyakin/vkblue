@@ -1,3 +1,15 @@
+export var regExpPatterns = (() => {
+
+  const sentenceSplitter = /(?<!\b(?:[\w\d])[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r]\b)(?<!^[[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r])(?<=[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r](?=\s))/gi
+  const bracketsContent = /\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\}/g;
+  const sentenceDashes = /(?!(?<=\p{L})[\-–](?=\p{L}))[\-–]/gum;
+  const sentenceQuotationMarks = /(?!(?<=\p{L})['’"`](?=\p{L}))['’"`]/gum;
+  const sentenceGarbage = /(?!(?<=\p{L})['’"`\-–](?=\p{L}))[^\p{L}\d&.,Λ ]/gum;
+  const extraSpaces = /(\s)+/g;
+
+  return {bracketsContent, sentenceDashes, sentenceQuotationMarks, sentenceGarbage, extraSpaces};
+})();
+
 export function waitForElement(selector, context, options) {
     context = context || document;
     const { timeout, waitForMissing} = options || {};
@@ -405,3 +417,44 @@ export function parseURL(str) {
   return obj;
 }
 
+
+/**
+ * Splits a string into two parts at the first occurrence of a specified substring or regular expression.
+ * 
+ * @param {string} string - The string to split.
+ * @param {string | RegExp} regexpOrSubstr - The substring or regular expression to split on.
+ * @return {string[]} - An array containing the two parts of the string.
+ * @tags #string #split #utility
+ */
+export function splitFirst(string, regexpOrSubstr) {
+  let specialSymbol = '¬';
+  return string.replace(regexpOrSubstr, specialSymbol).split(specialSymbol);
+}
+
+/**
+ * Returns the element with the maximum string length from an array.
+ *
+ * @param {string[]} arr - An array of strings.
+ * @returns {string} The longest string in the array.
+ *
+ * @throws {TypeError} If the array is empty or contains non-string values.
+ */
+export function longestElement(arr) {
+  return arr.reduce((longest, current) =>
+    current.length > longest.length ? current : longest
+  );
+}
+
+/**
+ * Returns the element with the minimum string length from an array.
+ *
+ * @param {string[]} arr - An array of strings.
+ * @returns {string} The shortest string in the array.
+ *
+ * @throws {TypeError} If the array is empty or contains non-string values.
+ */
+export function shortestElement(arr) {
+  return arr.reduce((shortest, current) =>
+    current.length < shortest.length ? current : shortest
+  );
+}

@@ -7,7 +7,7 @@ import styles from './styles.scss';
 
 function formatLyrics(text = '') {
     return text
-        .replace(/(\[[^\]]+\])/g, '<span class="lyrics-meta">$1</span>')
+        .replace(/(\[[^\[\]]*\])/g, '<span class="lyrics-meta">$1</span>')
         .replace(/\n/g, '<br/>');
 }
 
