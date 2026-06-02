@@ -2,8 +2,16 @@ import React from 'react';
 import CSSModules from 'react-css-modules';
 import styles from './styles.scss';
 
+function formatLyrics(text = '') {
+    return text
+        .replace(/(\[[^\]]+\])/g, '')
+}
+
 export const SmallLyrics = CSSModules(
     ({ text }) => {
+
+        text = typeof text === 'string' ? formatLyrics(text) : text;
+
         return (
             <div styleName="wrapper">
                 <div styleName="content">

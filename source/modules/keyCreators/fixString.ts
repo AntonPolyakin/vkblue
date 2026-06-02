@@ -12,10 +12,10 @@ export const fixString: (source: string) => string = source => {
     result = decodeHtml(source);
     result = deburr(result);
     result = result
-        .replace(/(\s)+/g, ' ')
         .replace(/\s*\(.*?\)\s*/g, '')
         .replace(/\s*\[.*?]\s*/g, '')
-        .replace(/(?!(?<=\p{L})['’](?=\p{L}))[^\p{L}&.Λ ]/gu, ' ');
+        .replace(/(?!(?<=\p{L})['’](?=\p{L}))[^\p{L}&.Λ \-–]/gu, ' ')
+        .replace(/(\s)+/g, ' ');
     result = trim(result).toLowerCase();
 
     return result;
