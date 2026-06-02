@@ -107,7 +107,7 @@ const manifest = Object.assign({
     name: '__MSG_extName__',
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
-    version: '0.7.1',
+    version: '0.7.2',
     version_name: '0.7.2',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
