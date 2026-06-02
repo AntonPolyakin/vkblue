@@ -440,7 +440,8 @@ export function splitFirst(string, regexpOrSubstr) {
  * @throws {TypeError} If the array is empty or contains non-string values.
  */
 export function longestElement(arr) {
-  return arr.reduce((longest, current) =>
+  if (arr.length === 0) return undefined;
+  return arr?.reduce((longest, current) =>
     current.length > longest.length ? current : longest
   );
 }
@@ -454,6 +455,7 @@ export function longestElement(arr) {
  * @throws {TypeError} If the array is empty or contains non-string values.
  */
 export function shortestElement(arr) {
+  if (arr.length === 0) return undefined;
   return arr.reduce((shortest, current) =>
     current.length < shortest.length ? current : shortest
   );

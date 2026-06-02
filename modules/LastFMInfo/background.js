@@ -70,7 +70,7 @@ on(LASTFM_GET_INFO, async request => {
         } catch (error) {
             $ = null;
         }
-
+        let hasArtistPage = !!(artistPage && $);
 
         artistResult.bio = (() => {
             let res;
@@ -84,7 +84,7 @@ on(LASTFM_GET_INFO, async request => {
 
             res = bio[preferredLang]?.content ? bio[preferredLang] : bio[basicLang];
 
-            if (!res?.content) {
+            if (!res?.content && hasArtistPage) {
 
                 const texts = $('.wiki-block-inner')
                     ?.map((_, el) => $(el).text())
@@ -105,7 +105,7 @@ on(LASTFM_GET_INFO, async request => {
                     },
                     published: '',//"31 Dec 2007, 06:04",
                     summary: shortestElement(texts)
-                }
+                };
             }
 
             return res || {};
@@ -115,7 +115,7 @@ on(LASTFM_GET_INFO, async request => {
         artistResult.image = await new Promise(async resolve => {
             try {
                 const artistUrl = artistResult.url;
-                if (!artistPage) {
+                if (!hasArtistPage) {
                     throw null;
                 }
 
