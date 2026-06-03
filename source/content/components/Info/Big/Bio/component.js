@@ -18,7 +18,7 @@ const Component = function({ bio, name, album, link, onSearchAlbum, genres }) {
                             onClick={onSearchAlbum.bind(null, `${name} ${album}`)}
                             styleName="title"
                         >
-                            {lodashTruncate(album, { length: 15, omission: '..' })}
+                            {lodashTruncate(album, { length: 100, omission: '..' })}
                         </span>
                     </div>
                 ) : null}

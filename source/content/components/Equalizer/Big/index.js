@@ -12,12 +12,14 @@ import {
   equalizerUpdateEffectGain,
   equalizerUpdateEffectName,
   equalizerUpdateSurround,
+  equalizerUpdatePitchSettings
 } from '../../../../store/equalizer/actionCreators';
 import {
   getEqualizerConvolverEffect,
   getEqualizerConvolverGain,
   getEqualizerFilters,
   getEqualizerSurround,
+  getEqualizerPitchSettings
 } from '../../../../store/equalizer/selectors';
 import {
   getSettingsCompressorEnabled,
@@ -27,6 +29,7 @@ import {
 import { getPresetsPresets, getPresetsAuto, getPresetsCurrent } from '../../../../store/presets/selectors';
 import { deletePreset, updateAutoPreset, updateCurrentPreset, updatePreset } from '../../../../actionCreators/presets';
 import { jsxJoin } from '../../../../utils/jsx-utils';
+import styled from 'styled-components';
 
 const EFFECTS = [
   { name: 'ambience', text: 'Ambience' },
@@ -34,6 +37,37 @@ const EFFECTS = [
   { name: 'hall', text: 'Concert' },
   { name: 'space', text: 'Space' },
 ];
+
+const DEFAULT_PITCH_SETTINGS = {
+  pitchValueSemitones: 0,
+  pitchValueCents: 0,
+  windowSizeMilliseconds: 120,
+  applySmartProcessing: true,
+  speedUnits: 0,
+  speedFine: 0,
+  preservePitch: true,
+};
+
+const Button = styled.button`
+    float: right;
+    padding: 7px 16px 8px;
+    font-size: 12.5px;
+    display: inline-block;
+    zoom: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    outline: none;
+    vertical-align: top;
+    line-height: 15px;
+    text-align: center;
+    text-decoration: none;
+    background: none;
+    background-color: #5181b8;
+    color: #fff;
+    border: 0;
+    border-radius: 4px;
+    box-sizing: border-box;
+`;
 
 class BigEqualizer extends PureComponent {
   static defaultProps = {};
@@ -43,6 +77,10 @@ class BigEqualizer extends PureComponent {
     this.state = {
       showEffects: false,
     };
+    this.pitchRefs = [];
+    this.resetPitchSettings = this.resetPitchSettings.bind(this);
+    this.onChangePitch = this.onChangePitch.bind(this);
+
     this.onAddPreset = this.onAddPreset.bind(this);
     this.onChangeSurround = this.onChangeSurround.bind(this);
     this.onChangeEffect = this.onChangeEffect.bind(this);
@@ -78,6 +116,8 @@ class BigEqualizer extends PureComponent {
       // listen input to update both css var and background size while sliding
       this.gainEffect.addEventListener('input', this._boundRangeInputHandler);
     }
+
+    this._syncPitchRanges();
 
     // MutationObserver to track dir changes (ltr/rtl)
     this.observer = new MutationObserver(mutationList => {
@@ -123,6 +163,10 @@ class BigEqualizer extends PureComponent {
         this._updateRangeVisual(this.gainEffect);
       }
     }
+
+    if (prevProps.pitchSettings !== this.props.pitchSettings) {
+      this._syncPitchRanges();
+    }
   }
 
   // Unified handler: updates CSS var --value and backgroundSize (progress fill)
@@ -160,6 +204,40 @@ class BigEqualizer extends PureComponent {
     if (max !== min) percentage = ((val - min) * 100) / (max - min);
     if (this.isRTL) percentage = ((max - val) * 100) / (max - min || 1);
     target.style.backgroundSize = `${percentage}% 100%`;
+  }
+
+  _syncRangeVisual(input) {
+    if (!input || input.type !== 'range') return;
+
+    const min = input.min === '' ? 0 : parseFloat(input.min);
+    const max = input.max === '' ? 100 : parseFloat(input.max);
+    const val = parseFloat(input.value);
+
+    const range = max - min || 1;
+    let ratio = (val - min) / range;
+    ratio = Math.max(0, Math.min(1, ratio));
+
+    if (this.isRTL) {
+      ratio = 1 - ratio;
+    }
+
+    const sx = `${ratio * 100}%`;
+
+    input.style.setProperty('--min', String(min));
+    input.style.setProperty('--max', String(max));
+    input.style.setProperty('--value', String(val));
+    input.style.setProperty('--sx', sx);
+    input.style.backgroundSize = `${sx} 100%`;
+  }
+
+  _syncPitchRanges() {
+    this.pitchRefs.forEach(input => this._syncRangeVisual(input));
+  }
+
+  resetPitchSettings() {
+    const pitch = { ...DEFAULT_PITCH_SETTINGS };
+
+    this.props.equalizerUpdatePitchSettings(pitch);
   }
 
   openConfig() {
@@ -200,6 +278,10 @@ class BigEqualizer extends PureComponent {
     this.props.equalizerUpdateEffectGain(parseFloat(gainEffect.value));
   }
 
+  onChangePitch(key, value) {
+    this.props.equalizerUpdatePitchSettings({ [key]: value });
+  }
+
   get effects() {
     const { onChangeEffect } = this;
     const { effect } = this.props;
@@ -233,9 +315,28 @@ class BigEqualizer extends PureComponent {
       settingsSurround,
       settingsCompressor,
       enabled,
-      filters
+      filters,
+      pitchSettings
     } = this.props;
-    const { showEffects } = this.state;
+    const { showEffects, pitch } = this.state;
+
+    const {
+      pitchValueSemitones,
+      pitchValueCents,
+      windowSizeMilliseconds,
+      applySmartProcessing,
+      speedUnits,
+      speedFine,
+      preservePitch,
+    } = pitchSettings;
+
+    const calcSpeedPercentage = (units, fine) => {
+      const base = units < 0 ? 100 + units : 100 + 5 * units;
+      return base + fine;
+    };
+
+    const speedPercent = calcSpeedPercentage(speedUnits, 0);
+    const speedFineDisplay = calcSpeedPercentage(speedUnits, speedFine);
     let backgroundColor;
     Array.from(window.document.querySelectorAll('#spa_layout_content section')).some(pB => {
       backgroundColor = `var(--vkui--color_background_content, ${window.getComputedStyle(pB).getPropertyValue('background-color')})`;
@@ -290,12 +391,6 @@ class BigEqualizer extends PureComponent {
             )}
           </div>
 
-          {/* <div styleName="autodetect">
-            <Checkbox value={auto} onChange={({ value }) => presetsUpdateAuto(value)}>
-              Автоопределение
-            </Checkbox>
-          </div> */}
-
           <PopupMenu
             trigger={
               <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
@@ -328,36 +423,156 @@ class BigEqualizer extends PureComponent {
         <div styleName={ClassNames('equalizer-wrapper', { disabled: !enabled })}>
           <Filters />
         </div>
-        <div styleName={ClassNames('effects-wrapper', { opened: showEffects })} style={{ backgroundColor }}>
+        <div styleName={ClassNames('effects-wrapper', { opened: showEffects })}>
           <span onClick={onToggleEffects} style={{ backgroundColor }}>
             Эффекты
           </span>
           <div styleName="effects">
-            <ul>
-              <li
-                styleName={ClassNames('dolby', {
-                  active: !settingsCompressor && settingsSurround && surround,
-                })}
-                onClick={onChangeSurround}
-              >
-                <span>DOLBY</span>
-              </li>
-              {effects}
-            </ul>
-            <div styleName={ClassNames('depth', effect, { enabled: effect })}>
-              {/* added ref here — this.gainEffect */}
-              <input
-                ref={i => (this.gainEffect = i)}
-                className={`${styles['styled-slider']} ${styles['slider-progress']}`}
-                value={gainEffect}
-                type="range"
-                max="1"
-                min="0"
-                step="0.1"
-                onChange={onChangeGainEffect}
-                disabled={!effect}
-              />
+            <h3>Пространственные эффекты</h3>
+            <div styleName="spatial-section">
+
+              <ul>
+                <li
+                  styleName={ClassNames('dolby', {
+                    active: !settingsCompressor && settingsSurround && surround,
+                  })}
+                  onClick={onChangeSurround}
+                >
+                  <span>DOLBY</span>
+                </li>
+                {effects}
+              </ul>
+              <div styleName={ClassNames('depth', effect, { enabled: effect })}>
+                {/* added ref here — this.gainEffect */}
+                <input
+                  ref={i => (this.gainEffect = i)}
+                  className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                  value={gainEffect}
+                  type="range"
+                  max="1"
+                  min="0"
+                  step="0.1"
+                  onChange={onChangeGainEffect}
+                  disabled={!effect}
+                />
+              </div>
             </div>
+
+            <h3>Эффекты растяжения</h3>
+            <div styleName="pitch-section">
+
+
+              <div styleName="pitch-col">
+                <div styleName="pitch-control">
+                  <label>Высота тона: <span>{pitchValueSemitones}</span> (полутона)</label>
+                  <input
+                    ref={el => (this.pitchRefs[0] = el)}
+                    className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                    type="range"
+                    min="-12"
+                    max="12"
+                    step="1"
+                    value={pitchValueSemitones}
+                    onInput={e => this._syncRangeVisual(e.target)}
+                    onChange={e => this.onChangePitch('pitchValueSemitones', parseInt(e.target.value, 10))}
+                  />
+                </div>
+
+                <div styleName="pitch-control">
+                  <label>Высота тона: <span>{pitchValueCents}</span> (центы)</label>
+                  <input
+                    ref={el => (this.pitchRefs[1] = el)}
+                    className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                    type="range"
+                    min="-50"
+                    max="50"
+                    step="1"
+                    value={pitchValueCents}
+                    onInput={e => this._syncRangeVisual(e.target)}
+                    onChange={e => this.onChangePitch('pitchValueCents', parseInt(e.target.value, 10))}
+                  />
+                </div>
+
+                <div styleName="pitch-control">
+                  <label>Размер блока: <span>{windowSizeMilliseconds}</span> (мс)</label>
+                  <input
+                    ref={el => (this.pitchRefs[2] = el)}
+                    className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                    type="range"
+                    min="20"
+                    max="150"
+                    step="5"
+                    value={windowSizeMilliseconds}
+                    onInput={e => this._syncRangeVisual(e.target)}
+                    onChange={e => this.onChangePitch('windowSizeMilliseconds', parseInt(e.target.value, 10))}
+                  />
+                </div>
+
+                <div styleName="pitch-row">
+                  <Checkbox
+                    value={applySmartProcessing}
+                    onChange={({ value }) => this.onChangePitch('applySmartProcessing', value)}
+                  >
+                    Умная обработка
+                  </Checkbox>
+                </div>
+              </div>
+
+
+              <div styleName="pitch-col">
+                <div styleName="pitch-control">
+                  <label>Скорость воспроизведения: <span>{speedPercent}%</span></label>
+                  <input
+                    ref={el => (this.pitchRefs[3] = el)}
+                    className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                    type="range"
+                    min="-75"
+                    max="60"
+                    step="1"
+                    value={speedUnits}
+                    onInput={e => this._syncRangeVisual(e.target)}
+                    onChange={e => this.onChangePitch('speedUnits', parseInt(e.target.value, 10))}
+                  />
+                </div>
+
+                <div styleName="pitch-control">
+                  <label>Скорость воспроизведения: <span>{speedFineDisplay}%</span></label>
+                  <input
+                    ref={el => (this.pitchRefs[4] = el)}
+                    className={`${styles['styled-slider']} ${styles['slider-progress']}`}
+                    type="range"
+                    min="-5"
+                    max="5"
+                    step="1"
+                    value={speedFine}
+                    onInput={e => this._syncRangeVisual(e.target)}
+                    onChange={e => this.onChangePitch('speedFine', parseInt(e.target.value, 10))}
+                  />
+                </div>
+
+                <div styleName="pitch-row">
+                  <Checkbox
+                    value={preservePitch}
+                    onChange={({ value }) => this.onChangePitch('preservePitch', value)}
+                  >
+                    Сохранить тональность
+                  </Checkbox>
+                </div>
+              </div>
+
+            </div>
+
+            <div styleName="pitch-reset-row">
+
+              <Button
+                onClick={() => {
+                  this.resetPitchSettings();
+                }}
+              >
+                Сбросить
+              </Button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -376,6 +591,7 @@ const mapStateToProps = state => ({
   enabled: getSettingsEqualizerEnabled(state),
   settingsSurround: getSettingsSurroundEnabled(state),
   settingsCompressor: getSettingsCompressorEnabled(state),
+  pitchSettings: getEqualizerPitchSettings(state),
 });
 
 const mapDispatchToProps = {
@@ -387,6 +603,7 @@ const mapDispatchToProps = {
   equalizerUpdateSurround,
   equalizerUpdateEffectGain,
   equalizerUpdateEffectName,
+  equalizerUpdatePitchSettings,
 };
 
 export default connect(

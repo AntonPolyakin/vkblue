@@ -5,7 +5,8 @@ import { storageGet, storageSet } from '../../source/modules/LocalStorage/storag
 
 import { LASTFM_GET_INFO } from './action-types';
 
-import clearString from './utils/clear_string';
+import { clearTrackString } from './utils/clear_track_string';
+import { clearSpreadMoreString } from './utils/clear_spread_more_string.js'; 
 import getTrack from './api/get-track-info';
 import getArtist from './api/get-artist-info';
 import { on } from '../../source/modules/Port/background';
@@ -13,13 +14,16 @@ import { on } from '../../source/modules/Port/background';
 import { TRACKS_STORAGE_KEY } from '../../source/store/tracks/constants';
 import { ARTISTS_STORAGE_KEY } from '../../source/store/artists/constants';
 
+import { fetchWebArchive } from './utils/web_archive';
+import { regExpPatterns, longestElement, shortestElement } from '../../source/utils/js-utils';
+
 const getArtistKey = ({ artist = '' }) => `${artist.toLowerCase()}`;
 const getTrackKey = ({ artist = '', title = '' }) => `${artist.toLowerCase()}-${title.toLowerCase()}`;
 
 on(LASTFM_GET_INFO, async request => {
     try {
-        const artist = clearString(request.artist);
-        const title = clearString(request.title);
+        const artist = clearTrackString(request.artist);
+        const title = clearTrackString(request.title);
 
         const {
             ARTISTS_STORAGE_KEY: artistsStorage = {},
@@ -53,17 +57,68 @@ on(LASTFM_GET_INFO, async request => {
         }
 
         const artistResult = get(artistInfo, 'ru.artist', get(artistInfo, 'en.artist', {}));
+        let artistPage, $;
+        try {
+            const artistUrl = artistResult.url;
+            if (!artistUrl) {
+                throw null;
+            }
+            artistPage = await (await fetchWebArchive(artistUrl)).text();
+            const body = artistPage;
+            $ = body ? cheerio.load(body) : null;
 
-        if (!get(artistInfo, 'ru.artist.bio.content', null)) {
-            artistResult.bio = get(artistInfo, 'en.artist.bio', {});
+        } catch (error) {
+            $ = null;
         }
+        let hasArtistPage = !!(artistPage && $);
+
+        artistResult.bio = (() => {
+            let res;
+            let bio= {
+                ru: get(artistInfo, 'ru.artist.bio', null),
+                en: get(artistInfo, 'en.artist.bio', null)
+            };
+
+            let preferredLang = 'ru';
+            let basicLang = 'en';
+
+            res = bio[preferredLang]?.content ? bio[preferredLang] : bio[basicLang];
+
+            if (!res?.content && hasArtistPage) {
+
+                const texts = $('.wiki-block-inner')
+                    ?.map((_, el) => $(el).text())
+                    ?.get() || [];
+
+                for (let index = 0; index < texts.length; index++) {
+                    const text = texts[index];
+
+                    texts[index] = clearSpreadMoreString(text);
+                }
+
+                res = {
+                    content: longestElement(texts),
+                    links:{
+                        '#text': "",
+                        href: artistResult.url + "/+wiki",
+                        rel: "original",
+                    },
+                    published: '',//"31 Dec 2007, 06:04",
+                    summary: shortestElement(texts)
+                };
+            }
+
+            return res || {};
+        })()
+
 
         artistResult.image = await new Promise(async resolve => {
             try {
-                const res = await fetch(artistResult.url);
-                const body = await res.text();
+                const artistUrl = artistResult.url;
+                if (!hasArtistPage) {
+                    throw null;
+                }
 
-                const $ = cheerio.load(body);
                 const image = $('.header-new-background-image');
                 const content = image ? image.attr('content') : null;
 

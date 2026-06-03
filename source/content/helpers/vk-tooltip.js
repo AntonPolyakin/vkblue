@@ -97,7 +97,7 @@ export function setVkTooltip(options) {
             original = document.querySelector(tooltipSelector + `[id="${siblingTooltipId}"]`);
 
             if (!original) {
-                warn('original tooltip not found after wait');
+                log('original tooltip not found after wait');
                 try { injectedStyle.remove(); } catch (e) { }
                 ctx._vkProcessing = false;
                 return;

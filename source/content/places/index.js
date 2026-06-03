@@ -75,16 +75,20 @@ const OBSERVERS = [
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return !!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length;
+      return (!!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length) || !document.getElementById(MAIN_PLAYER_CONTAINER_ID);
     },
-    filterUnmount(/* addedContainer */) {
+    filterUnmount(addedContainer) {
       // keep main player until major audio layout is gone
+      if (!document.contains(addedContainer) || (addedContainer.dataset.location !== document.location.pathname)){
+        return true;
+      }
       return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
       const container = document.createElement('div');
       container.id = MAIN_PLAYER_CONTAINER_ID;
+      container.dataset.location = document.location.pathname;
       const classList = ['vkuiGroup--mode-card', 'vkuiGroup__modeCard', 'vkuiInternalGroup--mode-card'];
       container.classList.add(...classList);
       container.style.cssText = 'position: relative; margin-top: 16px; overflow:hidden; z-index: 1;';

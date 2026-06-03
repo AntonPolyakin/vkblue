@@ -1,3 +1,15 @@
+export var regExpPatterns = (() => {
+
+  const sentenceSplitter = /(?<!\b(?:[\w\d])[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r]\b)(?<!^[[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r])(?<=[!¡?¿؟।।ฯ։።\.·…;។།ໃ་᠆᠉⸮⸘⸴፧᜵᜶ᝪᝫ᠃᠉᠊᠋᠌᠍᠆᠊᠋᠌᠍᠆᠊᠋᠌᠍⹀⹁⹂⹃⹄⹅⹆⹇⹈⹉⹊⹋⹌⹍⹎⹏⹐⹑⹒⹓⹔⹕⹖⹗⹘⹙⹚⹛⹜⹝⹞⹟⹠⹡⹢⹣⹤⹥⹦⹧⹨⹩⹪⹫⹬⹭⹮⹯⹰⹱⹲⹳⹴⹵⹶⹷⹸⹹⹺⹻⹼⹽⹾⹿;\n\r](?=\s))/gi
+  const bracketsContent = /\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\}/g;
+  const sentenceDashes = /(?!(?<=\p{L})[\-–](?=\p{L}))[\-–]/gum;
+  const sentenceQuotationMarks = /(?!(?<=\p{L})['’"`](?=\p{L}))['’"`]/gum;
+  const sentenceGarbage = /(?!(?<=\p{L})['’"`\-–](?=\p{L}))[^\p{L}\d&.,Λ ]/gum;
+  const extraSpaces = /(\s)+/g;
+
+  return {bracketsContent, sentenceDashes, sentenceQuotationMarks, sentenceGarbage, extraSpaces};
+})();
+
 export function waitForElement(selector, context, options) {
     context = context || document;
     const { timeout, waitForMissing} = options || {};
@@ -46,15 +58,24 @@ export function objectToCSS(style) {
     return Object.entries(style).map(([k, v]) => `${k}:${v}`).join(';')
 }
 
+
+/**
+ * Clamps a value to the nearest boundary within a specified range.
+ * 
+ * @param {number} value - The value to be clamped.
+ * @param {[number, number]} range - An array representing the range [start, end].
+ * @return {number} - The clamped value within the range.
+ * @tags #math #utility
+ */
 export function clampToRange(value, range) {
   const [start, end] = range;
 
   if (value >= Math.min(start, end) && value <= Math.max(start, end)) {
-      return value;
+    return value;
   } else if (Math.abs(value - start) < Math.abs(value - end)) {
-      return start;
+    return start;
   } else {
-      return end;
+    return end;
   }
 }
 
@@ -327,4 +348,115 @@ export function stringifyCustom(obj, formatters = {}, space) {
                 return markers.get(marker);
             }
         );
+}
+
+/**
+ * Matches a URL against one or more URL patterns, supporting wildcard (`*`) matching.
+ * 
+ * @param {string} url - The URL to test.
+ * @param {string | string[]} urlPatterns - A single pattern or an array of patterns to match against.
+ * @return {boolean} - `true` if the URL matches any of the patterns, otherwise `false`.
+ * @tags #url #matching #utility
+ */
+export function matchURLPatterns(url, urlPatterns) {
+
+  function escapeString(str, slashLength = 2) {
+    return str.replace(new RegExp('[-[\\]{}()*+?&.,\\\\^$|#\'\"]', 'gim'), (`${[...new Array(slashLength)].map(i => '\\').join('')}$&`));
+  };
+
+  urlPatterns = typeof urlPatterns == 'string' ? [urlPatterns] : urlPatterns || [];
+
+  return urlPatterns?.some(pattern => {
+    return url.match(new RegExp('^' + escapeString(pattern, 1).replace(/\\\*/gim, '.*') + '$', ''));
+  });
+}
+
+
+/**
+ * Parses a URL string into its components, such as protocol, hostname, pathname, query parameters, and more.
+ * 
+ * @param {string} str - The URL string to parse.
+ * @return {Object} - An object containing the parsed components of the URL.
+ * @tags #url #parsing #utility
+ */
+export function parseURL(str) {
+  const parseUrl = /^(?<href>(?:(?<scheme>(?:view-source|blob):))?(?<protocol>(?:http|https|ftp|ftps|file|urn|chrome|browser|chrome-extension|moz-extension|chrome-error|devtools|view-source|about|javascript|data|postgres|mysql|ws|wss|[A-Za-z][A-Za-z0-9+.\-]*)(?<!localhost\b):(?=[^\s]+))(?:(?:(?:\/\/)?(?<auth>(?<username>(?:[A-Za-z0-9._~!$&'()*+,;=\-]|%[0-9A-Fa-f]{2})*)(?::(?<password>(?:[A-Za-z0-9._~!$&'()*+,;=:\-]|%[0-9A-Fa-f]{2})*))?@)?(?<host>(?<hostname>(?<=\/\/|@)(?:(?<ip>\d{1,3}(?:\.\d{1,3}){3}(?![.\d]))|(?![\p{N}.]{1,3}\.)(?:(?:(?<subdomains>(?:[\p{L}\p{N}\p{S}][\p{L}\p{N}\p{S}\p{M}\-]*[\p{L}\p{N}\p{S}\p{M}]?\.)*)?(?<secondLevelDomain>[\p{L}\p{N}\p{S}](?:[\p{L}\p{N}\p{S}\p{M}\-]*[\p{L}\p{N}\p{S}\p{M}])?)\.(?<topLevelDomain>(?=[\p{L}\p{N}\p{S}\p{M}\-]*\p{L})[\p{L}\p{N}\p{S}](?:[\p{L}\p{N}\p{S}\p{M}\-]*[\p{L}\p{N}\p{S}\p{M}])?))|(?:[\p{L}\p{N}\p{S}\p{M}\-]*[\p{L}\p{N}\p{S}\p{M}])))(?=[^\p{L}\p{N}_]|$))?(?::(?<port>\d+))?)?(?<!\/\/\b|@|-|\.)(?<pathname>(?!\/\/|-|\.)(?:\/{0,}[-,\/%_.~+()'"&@:;\p{L}\p{N}\p{S}\p{M}\p{Pc}\p{Pd} ]+)+)?(?:(?<search>\?[:;&\p{L}\d%_.,~+=\-\/ ()]*))?(?:(?<hash>#[\p{L}\d_\-\?&=]*))?)))$/gum;
+  
+  const regex = parseUrl;
+  const match = regex.exec(str);
+  if (!match) return null;
+
+  const g = match.groups;
+
+  const obj = {
+    href: g.href,//http://a:b@www.example.com:123/foo/bar.html?fox=trot#foo
+    origin: g.host
+      ? `${g.scheme || ''}${g.protocol}//${g.username ? g.username + (g.password ? ':' + g.password : '') + '@' : ''}${g.host}${g.port ? ':' + g.port : ''}`
+      : null, //http://a:b@www.example.com:123 (with username and password)
+    protocol: g.protocol, //http 
+    scheme: g.scheme, //view-source: (deprecated)
+    auth: g.scheme, //a:b@ (deprecated)
+    username: g.username, //a
+    password: g.password, //b
+    host: g.host, //www.example.com:123
+    hostname: g.hostname, //www.example.com
+    ip: g.ip, //123.123.123.123 (deprecated)
+    subdomain: g.subdomains ? g.subdomains?.split('.')?.[0] : undefined, //www (deprecated)
+    subdomains: g.subdomains, //www. (deprecated)
+    domain: g.secondLevelDomain && g.topLevelDomain
+      ? `${g.secondLevelDomain}.${g.topLevelDomain}`
+      : null, //example.com (deprecated)
+    domainName: g.secondLevelDomain, //example (deprecated)
+    topLevelDomain: g.topLevelDomain, //com (deprecated)
+    port: g.port, //123
+    pathname: g.pathname, // /foo/bar.html
+    queryParams: g.search ? g.search.slice(1) : undefined, //fox=trot 
+    hash: g.hash ? g.hash.slice(1) : undefined // foo
+  };
+
+  return obj;
+}
+
+
+/**
+ * Splits a string into two parts at the first occurrence of a specified substring or regular expression.
+ * 
+ * @param {string} string - The string to split.
+ * @param {string | RegExp} regexpOrSubstr - The substring or regular expression to split on.
+ * @return {string[]} - An array containing the two parts of the string.
+ * @tags #string #split #utility
+ */
+export function splitFirst(string, regexpOrSubstr) {
+  let specialSymbol = '¬';
+  return string.replace(regexpOrSubstr, specialSymbol).split(specialSymbol);
+}
+
+/**
+ * Returns the element with the maximum string length from an array.
+ *
+ * @param {string[]} arr - An array of strings.
+ * @returns {string} The longest string in the array.
+ *
+ * @throws {TypeError} If the array is empty or contains non-string values.
+ */
+export function longestElement(arr) {
+  if (arr.length === 0) return undefined;
+  return arr?.reduce((longest, current) =>
+    current.length > longest.length ? current : longest
+  );
+}
+
+/**
+ * Returns the element with the minimum string length from an array.
+ *
+ * @param {string[]} arr - An array of strings.
+ * @returns {string} The shortest string in the array.
+ *
+ * @throws {TypeError} If the array is empty or contains non-string values.
+ */
+export function shortestElement(arr) {
+  if (arr.length === 0) return undefined;
+  return arr.reduce((shortest, current) =>
+    current.length < shortest.length ? current : shortest
+  );
 }

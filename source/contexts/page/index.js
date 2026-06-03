@@ -18,13 +18,13 @@ const postMessage = (type, audioId) => {
 let prevTimestampOfTimeupdate = 0;
 
 const _Audio = window.Audio;
-window.Audio = function(src) {
+window.Audio = function (src) {
     const audio = new _Audio(src);
 
     const id = '' + Date.now() + '_' + Math.random();
     audio.setAttribute('id', id);
 
-    audio.addEventListener('timeupdate', function(event) {
+    audio.addEventListener('timeupdate', function (event) {
         const currentAudio = getCurrentAudio();
 
         if (currentAudio === event.target) {
@@ -37,8 +37,8 @@ window.Audio = function(src) {
         }
     });
 
-    EVENT_TYPES.forEach(function(eventName) {
-        audio.addEventListener(eventName, function(event) {
+    EVENT_TYPES.forEach(function (eventName) {
+        audio.addEventListener(eventName, function (event) {
             const currentAudio = getCurrentAudio();
 
             if (currentAudio === event.target) {
@@ -53,13 +53,13 @@ window.Audio = function(src) {
 
 let _createMediaElementSource = window.AudioContext.prototype.createMediaElementSource;
 
-window.AudioContext.prototype.createMediaElementSource = function(audio) {
+window.AudioContext.prototype.createMediaElementSource = function (audio) {
     let mediaSource;
-    try {
-        mediaSource = _createMediaElementSource.call(this, audio);
-    } catch (error) {
-        mediaSource = _createMediaElementSource.call(this, new _Audio());
-    }
+    //try {
+    mediaSource = _createMediaElementSource.call(this, audio);
+    // } catch (error) {
+    //     mediaSource = _createMediaElementSource.call(this, new _Audio());
+    // }
 
     return mediaSource;
 };
