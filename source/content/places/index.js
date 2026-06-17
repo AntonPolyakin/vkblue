@@ -78,26 +78,34 @@ const OBSERVERS = [
       return (!!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length);
     },
     filterUnmount(addedContainer) {
-      return !document.querySelector(this.hostSelector);
+        return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
       const container = document.getElementById(MAIN_PLAYER_CONTAINER_ID) || document.createElement('div');
-      container.id = MAIN_PLAYER_CONTAINER_ID;
+      let containerId = MAIN_PLAYER_CONTAINER_ID;
+      container.id = containerId;
       container.dataset.location = document.location.pathname;
       const classList = ['vkuiGroup--mode-card', 'vkuiGroup__modeCard', 'vkuiInternalGroup--mode-card'];
       container.classList.add(...classList);
-      container.style.cssText = 'position: relative; margin-top: 16px; overflow:hidden; z-index: 1;';
 
       const content = document.querySelector('#page_body');
       let style;
 
-      let injectStyle = false;
+      let injectStyle = true;
       if (injectStyle) {
-        style = document.createElement('style');
+        let styleId = containerId + '-style';
+        style = document.getElementById(styleId) || document.createElement('style');
+        style.id = styleId;
         style.textContent = `
+          #${containerId}:not(:empty) {
+            position: relative; 
+            margin-top: 16px; 
+            overflow:hidden; 
+            z-index: 1;
+          }
           ${classList.map(item => '.' + item).join('')}:empty {
-          margin: 0px!important;
+            margin: 0px!important;
           }
           .top_audio_player_title, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography span{
             user-select:auto!important;
