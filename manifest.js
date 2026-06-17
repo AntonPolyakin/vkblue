@@ -15,8 +15,9 @@ const hostPermissions = [
     //lyrics
     '*://www.megalyrics.ru/*',
     '*://megalyrics.ru/*',
-    '*://genius.com/*',
     '*://lyricshare.net/*',
+    '*://*.genius.com/*',
+    '*://*.musixmatch.com/*',
     //api
     '*://ws.audioscrobbler.com/*',
     '*://www.last.fm/*',
@@ -107,8 +108,8 @@ const manifest = Object.assign({
     name: '__MSG_extName__',
     short_name: 'VK Blue',
     description: '__MSG_extDescription__',
-    version: '0.7.2',
-    version_name: '0.7.2',
+    version: '0.7.3',
+    version_name: '0.7.3',
     author: 'hadaev.ivan@gmail.com',
     default_locale: 'ru',
     homepage_url: 'https://vk.com/blue_player',

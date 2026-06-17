@@ -460,3 +460,28 @@ export function shortestElement(arr) {
     current.length < shortest.length ? current : shortest
   );
 }
+
+/**
+ * Converts a string to Sentence case format.
+ * 
+ * @param {string} str - The input string to convert.
+ * @return {string} - The converted string in Sentence case.
+ * @tags #string #conversion #utility
+ */
+export function toSentenceCase(str) {
+  let parsedStringArray = str.split(/(?<!\p{Lu})(?=\p{Lu})|-| |_|\./gum).filter(item => item && !/^[^\p{L}\d]$/ui.test(item));
+  var result = parsedStringArray.join(' ').toLowerCase();
+  return capitalizeFirstLetter(result);
+}
+
+/**
+ * Capitalizes the first letter of a string.
+ * 
+ * @param {string} string - The input string.
+ * @return {string} - The transformed string.
+ * @tags #string #utility
+ * @altname upperFirstCase deCap
+ */
+export function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

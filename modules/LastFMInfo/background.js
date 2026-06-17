@@ -5,7 +5,7 @@ import { storageGet, storageSet } from '../../source/modules/LocalStorage/storag
 
 import { LASTFM_GET_INFO } from './action-types';
 
-import { clearTrackString } from './utils/clear_track_string';
+import { clearTrackString, removeYearSubstring } from './utils/clear_track_string';
 import { clearSpreadMoreString } from './utils/clear_spread_more_string.js'; 
 import getTrack from './api/get-track-info';
 import getArtist from './api/get-artist-info';
@@ -22,7 +22,7 @@ const getTrackKey = ({ artist = '', title = '' }) => `${artist.toLowerCase()}-${
 
 on(LASTFM_GET_INFO, async request => {
     try {
-        const artist = clearTrackString(request.artist);
+        const artist = removeYearSubstring(clearTrackString(request.artist));
         const title = clearTrackString(request.title);
 
         const {

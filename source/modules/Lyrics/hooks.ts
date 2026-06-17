@@ -41,5 +41,5 @@ export const useLyrics: Hook = (artist, title) => {
         };
     }, [artist, title]);
 
-    return lyrics[lyricsKey];
+    return lyrics?.[lyricsKey];
 };

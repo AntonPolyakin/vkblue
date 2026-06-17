@@ -499,7 +499,6 @@ const ensurePitchNode = async () => {
     if (pitchInitPromise) return pitchInitPromise;
 
     pitchInitPromise = (async () => {
-        // путь подстрой под свой билд
         await audioContext.audioWorklet.addModule(
             browser.runtime.getURL('SignalsmithStretch.min.js'),
         );
