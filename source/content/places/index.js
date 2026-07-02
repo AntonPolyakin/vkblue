@@ -70,8 +70,8 @@ const OBSERVERS = [
 
   {
     name: 'main-player',
-    hostSelector: '#page_body div[class*="__audioInfo"]', // main audio page layout
-    targetSelector: '#page_body div[class*="__audioInfo"]',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]', // main audio page layout
+    targetSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
@@ -186,7 +186,7 @@ const OBSERVERS = [
 
   {
     name: 'panel-buttons',
-    hostSelector: '#page_body div[class*="__audioInfo"]',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
     targetSelector: '#page_body div[data-testid*="LayoutGroups_After"] > div',
     filterMount(node) {
       const sel = this.targetSelector;
@@ -230,8 +230,8 @@ const OBSERVERS = [
 
   {
     name: 'lastfm-buttons',
-    hostSelector: '#page_body div[class*="__audioInfo"]',
-    targetSelector: '#page_body div[class*="__audioButtons"] div[role="group"]',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
+    targetSelector: '#page_body div[class*="__audioButtons"] div[role="group"], #page_body div[class*="__audioButton"] div[role="group"], #page_body div[data-testid*="-audiobutton"] div[role="group"]',
     visibility() {
       return getSettingsScrobblerEnabled(store.getState());
     },

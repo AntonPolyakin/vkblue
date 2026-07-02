@@ -2,26 +2,76 @@ import React, { Component } from 'react';
 import CSSModules from 'react-css-modules';
 import styles from './styles.scss';
 import Loader from '../../../../Loader/component';
+import loadPicture from '../../../../../helpers/load_picture';
 
 class Picture extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             error: false,
+            picture: null,
         };
+
+        this._isMounted = false;
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
+        this.updatePicture(this.props.picture);
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.picture !== prevProps.picture) {
             this.setState({ error: false });
+            this.updatePicture(this.props.picture);
+        }
+    }
+
+    async updatePicture(url) {
+        if (url === undefined) {
+            if (this._isMounted) {
+                this.setState({ picture: null, error: false });
+            }
+            return;
+        }
+
+        if (url === null) {
+            if (this._isMounted) {
+                this.setState({ picture: null, error: true });
+            }
+            return;
+        }
+
+        try {
+            const picture = await loadPicture(url);
+
+            if (!this._isMounted) return;
+
+            if (this.props.picture !== url) return;
+
+            this.setState({
+                picture,
+                error: false,
+            });
+        } catch (e) {
+            if (!this._isMounted) return;
+
+            this.setState({
+                picture: null,
+                error: true,
+            });
         }
     }
 
     render() {
-        const { picture } = this.props;
-        const { error } = this.state;
+        const { error, picture } = this.state;
 
-        if (picture === undefined) {
+        if (this.props.picture === undefined) {
             return (
                 <div styleName="wrapper_picture">
                     <Loader />
@@ -29,7 +79,7 @@ class Picture extends Component {
             );
         }
 
-        if (picture === null || error) {
+        if (this.props.picture === null || error) {
             return (
                 <div styleName="wrapper_picture">
                     <div styleName="empty_picture" />
@@ -44,7 +94,7 @@ class Picture extends Component {
                     key={picture}
                     src={picture}
                     alt="image not found"
-                    onError={event => this.setState({ error: true })}
+                    onError={() => this.setState({ error: true })}
                 />
             </div>
         );
