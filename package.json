@@ -18,6 +18,7 @@
     "fuse.js": "^7.0.0",
     "https-browserify": "^1.0.0",
     "immutability-helper": "^2.5.0",
+    "linkedom": "^0.18.12",
     "lodash": "^4.17.4",
     "md5-hex": "^2.0.0",
     "mutation-summary": "1.0.0",

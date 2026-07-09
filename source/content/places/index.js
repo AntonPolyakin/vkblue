@@ -70,43 +70,56 @@ const OBSERVERS = [
 
   {
     name: 'main-player',
-    hostSelector: '#content ._audio_page_layout', // main audio page layout
-    targetSelector: '#content ._audio_page_layout div[class*="__root"] > div[class*="__audioInfo"]',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]', // main audio page layout
+    targetSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
-      return (!!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length) || !document.getElementById(MAIN_PLAYER_CONTAINER_ID);
+      return (!!element && !document.getElementById(MAIN_PLAYER_CONTAINER_ID)?.children?.length);
     },
     filterUnmount(addedContainer) {
-      // keep main player until major audio layout is gone
-      if (!document.contains(addedContainer) || (addedContainer.dataset.location !== document.location.pathname)){
-        return true;
-      }
-      return !document.querySelector(this.hostSelector);
+        return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
-      const container = document.createElement('div');
-      container.id = MAIN_PLAYER_CONTAINER_ID;
+      const container = document.getElementById(MAIN_PLAYER_CONTAINER_ID) || document.createElement('div');
+      let containerId = MAIN_PLAYER_CONTAINER_ID;
+      container.id = containerId;
       container.dataset.location = document.location.pathname;
       const classList = ['vkuiGroup--mode-card', 'vkuiGroup__modeCard', 'vkuiInternalGroup--mode-card'];
       container.classList.add(...classList);
-      container.style.cssText = 'position: relative; margin-top: 16px; overflow:hidden; z-index: 1;';
 
-      const content = document.querySelector('#content');
-      const style = document.createElement('style');
-      style.textContent = `${classList.map(item => '.' + item).join('')}:empty {
-        margin: 0px!important;
+      const content = document.querySelector('#page_body');
+      let style;
+
+      let injectStyle = true;
+      if (injectStyle) {
+        let styleId = containerId + '-style';
+        style = document.getElementById(styleId) || document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          #${containerId}:not(:empty) {
+            position: relative; 
+            margin-top: 16px; 
+            overflow:hidden; 
+            z-index: 1;
+          }
+          ${classList.map(item => '.' + item).join('')}:empty {
+            margin: 0px!important;
+          }
+          .top_audio_player_title, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography span{
+            user-select:auto!important;
+            -webkit-user-select: auto!important;
+            -moz-user-select: initial!important;
+            -ms-user-select: initial!important;
+          }
+        `.replace(/\s+/g, ' ').trim();
       }
-      .top_audio_player_title, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography, .audio_page_layout .vkui__root div > div > div:nth-child(2) span.vkuiTypography span{
-        user-select:auto!important;
-        -webkit-user-select: auto!important;
-        -moz-user-select: initial!important;
-        -ms-user-select: initial!important;
-      }`;
 
       if (content) {
-        content.appendChild(style);
+        if (style) {
+          content.appendChild(style)
+        };
         content.insertBefore(container, content.firstChild);
       } else {
         // fallback: try insert near the element's closest vkui__root
@@ -173,29 +186,29 @@ const OBSERVERS = [
 
   {
     name: 'panel-buttons',
-    hostSelector: '#content .AudioPlayerBlock__root',
-    targetSelector: '#content div[data-testid*="LayoutGroups_After"] > div',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
+    targetSelector: '#page_body div[data-testid*="LayoutGroups_After"] > div',
     filterMount(node) {
       const sel = this.targetSelector;
       const element = (node.matches && node.matches(sel)) ? node : node.querySelector && node.querySelector(sel);
       return !!element && !document.getElementById(PANEL_BUTTONS_CONTAINER_ID)?.children?.length && !element?.parentElement?.querySelector('[data-testid="loading-skeleton"]');
     },
     filterUnmount(/* addedContainer */) {
-      return !document.querySelector(this.hostSelector) && !document.querySelector('#content ._audio_page_layout');
+      return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
       if (!element) return null;
       const container = document.createElement('div');
       container.id = PANEL_BUTTONS_CONTAINER_ID;
- 
+
       container.style.cssText = `
         float: left;
         position: relative;
       `;
       // try to find slider parent's content sibling (replicate your previous traversal safely)
       try {
-        const slider = document.querySelector('#content [aria-valuemin="0"][role="slider"]');
+        const slider = document.querySelector('#page_body [aria-valuemin="0"][role="slider"]');
         if (slider) {
           let elContainer = slider.parentElement;
           for (let i = 0; i < 3 && elContainer; i++) elContainer = elContainer.parentElement;
@@ -205,7 +218,7 @@ const OBSERVERS = [
             const firstChild = contentChild && contentChild.firstChild;
             console.log('showTooltip', globalThis?.tooltips?.show);
             const siblingElement = firstChild ? firstChild.querySelector('button') : null;
-            setVkTooltip({container,text:'VK Blue', fromSibling:true, siblingElement, debug: true});
+            setVkTooltip({ container, text: 'VK Blue', fromSibling: true, siblingElement, debug: true });
           }
         }
       } catch (e) { console.debug('panel-buttons tooltip setup failed', e); }
@@ -217,11 +230,11 @@ const OBSERVERS = [
 
   {
     name: 'lastfm-buttons',
-    hostSelector: '#content .AudioPlayerBlock__root',
-    targetSelector: '#content div[class*="__audioButtons"] div[role="group"]',
+    hostSelector: '#page_body div[class*="__audioInfo"], #page_body div[data-testid*="-audioinfo"]',
+    targetSelector: '#page_body div[class*="__audioButtons"] div[role="group"], #page_body div[class*="__audioButton"] div[role="group"], #page_body div[data-testid*="-audiobutton"] div[role="group"]',
     visibility() {
-    return getSettingsScrobblerEnabled(store.getState());
-  },
+      return getSettingsScrobblerEnabled(store.getState());
+    },
 
     filterMount(node) {
       const sel = this.targetSelector;
@@ -229,7 +242,7 @@ const OBSERVERS = [
       return !!element && !document.getElementById(LAST_FM_BUTTONS_CONTAINER_ID)?.children?.length && !element?.parentElement?.querySelector('[data-testid="loading-skeleton"]');
     },
     filterUnmount(/* addedContainer */) {
-      return !document.querySelector(this.hostSelector) && !document.querySelector('#content ._audio_page_layout');
+      return !document.querySelector(this.hostSelector);
     },
     createContainer(node) {
       const element = (node.matches && node.matches(this.targetSelector)) ? node : node.querySelector && node.querySelector(this.targetSelector);
@@ -245,7 +258,7 @@ const OBSERVERS = [
       // attempt to append to sensible sibling (mirrors your original safe traversal)
       try {
         // find the slider and then the content sibling
-        const slider = document.querySelector('#content [aria-valuemin="0"][role="slider"]');
+        const slider = document.querySelector('#page_body [aria-valuemin="0"][role="slider"]');
         if (slider) {
           let elContainer = slider.parentElement;
           for (let i = 0; i < 3 && elContainer; i++) elContainer = elContainer.parentElement;
@@ -254,14 +267,14 @@ const OBSERVERS = [
             const firstChild = contentChild && contentChild.firstChild;
             const siblingElement = firstChild ? firstChild.querySelector('button') : null;
             console.log('siblingElement', siblingElement);
-            if (siblingElement) setVkTooltip({container, text:'Last.fm', fromSibling:true, siblingElement});
+            if (siblingElement) setVkTooltip({ container, text: 'Last.fm', fromSibling: true, siblingElement });
             // append to elContainer's first child area if present
             // if (contentChild){
             //   contentChild.appendChild(container);
             // } else{
-              element.appendChild(container);
+            element.appendChild(container);
             //}
-            
+
           } else {
             element.appendChild(container);
           }
@@ -341,6 +354,10 @@ class DOMObservers {
         }
       });
     });
+
+    // observeLocationChanges((url, prevUrl) => {
+    //   console.log('location changed', prevUrl, '->', url);
+    // });
 
     // Observe whole document for structural changes
     try {
@@ -450,6 +467,37 @@ class DOMObservers {
 
     return !!obs.visibility;
   }
+
+  observeLocationChanges(callback) {
+    let current = location.href;
+
+    const check = () => {
+      if (current !== location.href) {
+        const prev = current;
+        current = location.href;
+        callback(current, prev);
+      }
+    };
+
+    const pushState = history.pushState;
+    history.pushState = function (...args) {
+      const result = pushState.apply(this, args);
+      check();
+      return result;
+    };
+
+    const replaceState = history.replaceState;
+    history.replaceState = function (...args) {
+      const result = replaceState.apply(this, args);
+      check();
+      return result;
+    };
+
+    window.addEventListener('popstate', check);
+
+    return check;
+  }
+
 }
 
 /* Export a single instance */

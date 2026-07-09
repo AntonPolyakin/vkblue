@@ -1,4 +1,5 @@
 import generateSignature from './generate-signature';
+import { DOMParser } from 'linkedom';
 
 export default async function request({ method, sk, data }) {
   const url = 'https://ws.audioscrobbler.com/2.0/';
@@ -32,7 +33,21 @@ export default async function request({ method, sk, data }) {
       throw new Error(`Unsupported method: ${method}`);
     }
 
-    const body = await res.json();
+    let body;
+    try {
+      body = await res.json();
+    } catch (error) {
+      body = await res.text()
+      let xmlDoc = new DOMParser().parseFromString(
+        body,
+        'text/xml'
+      );
+      
+      res = {
+        ok: false,
+        statusText: xmlDoc.querySelector('error')?.textContent || 'Unknown error',
+      };
+    }
 
     if (!res.ok) {
       if (body?.error === 9) {

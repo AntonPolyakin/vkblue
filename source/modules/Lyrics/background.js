@@ -7,9 +7,10 @@ import Fuse from 'fuse.js';
 import { REQUEST_LYRICS, STORE_NAME } from './utils';
 import { createArtistAndTitleKey } from '../keyCreators/createArtistAndTitleKey';
 import { storageGet, storageSet } from '../LocalStorage/storage';
-import { matchURLPatterns, parseURL, clampToRange } from '../../utils/js-utils';
+import { matchURLPatterns, parseURL, clampToRange, toSentenceCase } from '../../utils/js-utils';
 import { getSearxInstances } from '../../utils/get-searx-instances';
 import { fetchWebArchive } from '../../../modules/LastFMInfo/utils/web_archive';
+import { reject } from 'lodash';
 
 const manifest = browser.runtime.getManifest();
 
@@ -83,11 +84,122 @@ const SITES = [
 
             let urlKey = key
                 .replace(/--/gim, '-')
-                .replace(/ /gim, '-')
+                .replace(/\\/gim, ' ')
+                .replace(/\//gim, ' ')
+                .replace(/\s+/gim, '-')
                 .replace(/'/gim, '')
                 .replace(/(?<=[^\p{Script=Latin}\p{N}])\p{L}(?<=[^\p{Script=Latin}\p{N}])/gu, '');
 
             return `https://genius.com/${urlKey}-lyrics`;
+        },
+        getSearchResults: async (input) => {
+            let searchResults;
+
+            try {
+                searchResults = await (await fetch(`https://genius.com/api/search/song?page=1&q=${input}`, {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                        "accept-language": "ru,en;q=0.9",
+                        "cache-control": "no-cache",
+                        "pragma": "no-cache",
+                        "priority": "u=1, i",
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    "body": null,
+                    "method": "GET",
+                    "mode": "cors",
+                    "credentials": "include"
+                })).json();
+
+            } catch (error) {
+                console.log(error);
+            }
+
+            return searchResults?.response?.sections?.[0]?.hits?.map(item => item?.result?.url);
+        }
+    },
+    {
+        host: 'musixmatch.com',
+        urlRegExp: /^https?:\/\/(?:www\.)?musixmatch\.com\/lyrics\/(?:[^\/]+\/?|\d+)\/(?:[^\/]+\/?|\d+)/,
+        getLyrics: $ => {
+            let data;
+            let staticData = (() => {
+                const root = $('div:not(:last-child) > div:first-child > h2[dir="auto"][aria-level="2"][role="heading"][class][style]:first-child')
+                    .first()
+                    .parent();
+
+                if (!root.length) {
+                    return '';
+                }
+
+                return root
+                    .children()
+                    .map((_, child) => {
+                        return $(child)
+                            .find('*:not(a) div > *[dir="auto"]:first-child')
+                            .map((_, item) => {
+                                const tagName = item.tagName;
+
+                                if (tagName === 'div') {
+                                    return $(item).text();
+                                }
+
+                                if (tagName === 'h2') {
+                                    return '';
+                                }
+
+                                return `[${toSentenceCase($(item).text())}]`;
+                            })
+                            .get()
+                            .join('\n');
+                    })
+                    .get()
+                    .join('\n\n')
+                    .trim();
+            })();
+
+            if (staticData) {
+                data = staticData;
+            } else {
+                data = (() => {
+                    const json = JSON.parse(
+                        $('#__NEXT_DATA__').text() || '{}'
+                    );
+
+                    return json?.props?.pageProps?.data?.trackInfo?.data?.trackStructureList
+                        ?.reduce((prev, cur) => {
+
+                            const lines = cur.lines
+                                ?.map(item => item.text)
+                                .join('\n') || '';
+
+                            const title = cur.title
+                                ? `[${toSentenceCase(cur.title)}]`
+                                : '';
+
+                            return prev + '\n\n' + [title, lines]
+                                .filter(Boolean)
+                                .join('\n');
+
+                        }, '')
+                        .trim();
+                })();
+            }
+
+            return data || null;
+        },
+        getUrl: ({ artist, title }) => {
+            const key = createArtistAndTitleKey(artist, title);
+
+            let urlKey = key
+                .replace(/--/gim, '/')
+                .replace(/\\/gim, ' ')
+                .replace(/\//gim, ' ')
+                .replace(/\s+/gim, '-')
+                .replace(/'/gim, '-')
+                .replace(/(?<=[^\p{Script=Latin}\p{N}])\p{L}(?<=[^\p{Script=Latin}\p{N}])/gu, '');
+
+            return `https://www.musixmatch.com/lyrics/${urlKey}`;
         },
     }
 ];
@@ -114,7 +226,7 @@ const findLinks = (cheerioLinks, artist, title) => {
 
 const fetchLyrics = async (url, fromWebArchive) => {
     const getLyrics = SITES.find(site => url.includes(site.host)).getLyrics;
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
         try {
             const res = await (fromWebArchive ? fetchWebArchive : fetch)(url);
             const body = await res.text();
@@ -128,10 +240,10 @@ const fetchLyrics = async (url, fromWebArchive) => {
             if (lyrics) {
                 resolve(lyrics);
             } else {
-                resolve(null);
+                reject(null);
             }
         } catch (error) {
-            resolve(null);
+            reject(null);
         }
 
     });
@@ -427,47 +539,48 @@ browser.runtime.onMessage.addListener(async message => {
         }
 
         let directSiteData = await (async () => {
-            let host = 'genius.com';
-            let site = SITES.find(item => item.host == host);
+            let hosts = ['genius.com', 'musixmatch.com'];
+            let host, site, url, lyrics;
+            for (let index = 0; index < hosts.length; index++) {
+                host = hosts[index];
+                site = SITES.find(item => item.host == host);
 
-            let searchResults, url, lyrics;
-
-            try {
-                searchResults = await (await fetch(`https://genius.com/api/search/song?page=1&q=${key}`, {
-                    "headers": {
-                        "accept": "application/json, text/plain, */*",
-                        "accept-language": "ru,en;q=0.9",
-                        "cache-control": "no-cache",
-                        "pragma": "no-cache",
-                        "priority": "u=1, i",
-                        "x-requested-with": "XMLHttpRequest"
-                    },
-                    "body": null,
-                    "method": "GET",
-                    "mode": "cors",
-                    "credentials": "include"
-                })).json();
-
-                url = searchResults?.response?.sections?.[0]?.hits?.[0]?.result?.url;
-            } catch (error) {
-                console.log(error);
-            }
-
-            if (!url) {
-                url = site.getUrl({ artist: data.artist, title: data.title });
-            }
-
-            try {
-                lyrics = await fetchLyrics(url);
-            } catch (error) {
                 try {
-                    lyrics = await fetchLyrics(url, true);
+                    if (site?.getSearchResults) {
+                        let res = await site.getSearchResults(key);
+                        url = res[0];
+                    } else {
+                        throw null;
+                    }
                 } catch (error) {
-                    lyrics = null;
+                    url = null;
+                }
+
+                if (!url) {
+                    url = site.getUrl({ artist: data.artist, title: data.title });
+                }
+
+                try {
+                    lyrics = await fetchLyrics(url);
+                } catch (error) {
+                    console.log(error);
+                    try {
+                        lyrics = await fetchLyrics(url, true);
+                    } catch (error) {
+                        lyrics = null;
+                    }
+                }
+                if (lyrics) {
+                    break;
                 }
             }
+            if (lyrics) {
+                lyrics = [lyrics, `[Source: ${host}]`].join('\n\n');
+                return { host, site, url, lyrics };
+            } else {
+                return null;
+            }
 
-            return { host, site, url, lyrics };
         })();
 
         if (directSiteData?.lyrics) {

@@ -2,23 +2,67 @@ import React, { Component } from 'react';
 import CSSModules from 'react-css-modules';
 import styles from './styles.scss';
 import Loader from '../../../../Loader/component';
+import loadPicture from '../../../../../helpers/load_picture';
 
 class Picture extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             error: false,
+            picture: null,
         };
     }
+
+    componentDidMount() {
+        this.updatePicture(this.props.picture);
+    }
+
     componentDidUpdate(prevProps) {
         if (this.props.picture !== prevProps.picture) {
             this.setState({ error: false });
+            this.updatePicture(this.props.picture);
+        }
+    }
+
+    async updatePicture(url) {
+        if (url === undefined) {
+            if (this._isMounted) {
+                this.setState({ picture: null, error: false });
+            }
+            return;
+        }
+
+        if (url === null) {
+            if (this._isMounted) {
+                this.setState({ picture: null, error: true });
+            }
+            return;
+        }
+
+        try {
+            const picture = await loadPicture(url);
+
+            if (!this._isMounted) return;
+
+            if (this.props.picture !== url) return;
+
+            this.setState({
+                picture,
+                error: false,
+            });
+        } catch (e) {
+            if (!this._isMounted) return;
+
+            this.setState({
+                picture: null,
+                error: true,
+            });
         }
     }
 
     render() {
-        const { picture } = this.props;
-        const { error } = this.state;
+        const { error, picture } = this.state;
 
         if (picture === undefined) {
             return (
@@ -36,11 +80,14 @@ class Picture extends Component {
             );
         }
 
-        const styles = {
-            backgroundImage: 'url(' + picture + ')',
-        };
-
-        return <div styleName="wrapper_picture" style={styles} key={picture}></div>;
+        return (
+            <div
+                styleName="wrapper_picture"
+                style={{
+                    backgroundImage: `url(${picture})`,
+                }}
+            />
+        );
     }
 }
 

@@ -12,9 +12,9 @@ import { getPresetsPresets } from '../../store/presets/selectors';
 import { Preset, PresetList } from '../../store/presets/types';
 import { updatePresets } from '../../actionCreators/presets';
 import { resetApp } from '../../modules/resetApp/content';
-import { clampToRange, getRandomString, stringifyCustom } from '../../utils/js-utils';
+import { stringifyCustom } from '../../utils/js-utils';
 import { reset } from '../../../modules/LastFMScrobbler/content';
-import { presets as defaultPresets } from '../../../source/store/presets/reducer';
+import normalizePresets from '../../utils/normalizePresets';
 
 const _Checkbox: any = require('../../content/components/Checkbox/component').default;
 
@@ -598,34 +598,6 @@ const Config: React.FunctionComponent<ConfigProps> = ({
         </SettingsWrapper>
     );
 };
-
-function normalizePresets(presets: PresetList | Preset[]): PresetList {
-    let presetsArray;
-    let presetsIds;
-
-    if (Array.isArray(presets)) {
-        presetsArray = presets;
-        presetsIds = [];
-    } else if (typeof presets == 'object') {
-        presetsArray = Object.values(presets);
-        presetsIds = Object.keys(presets);
-    }
-
-    return presetsArray?.reduce((prev, preset: Preset) => {
-        let presetId = presetsIds.find(item => presets[item] == preset) || Object.keys(defaultPresets).find(key => {
-            return defaultPresets[key]?.name == preset?.name;
-        }) || getRandomString(32);
-
-        let { values, name, genres, custom } = preset;
-        prev[presetId] = {
-            values: values.map(value => clampToRange(+value || 0, [-1, 1])),
-            name,
-            genres,
-            custom
-        };
-        return prev;
-    }, {}) || {};
-}
 
 const mapStateToProps = (state: GlobalStore) => ({
     settings: getSettings(state),

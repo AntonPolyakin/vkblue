@@ -22,9 +22,42 @@ const removeAlbumSubstring = (str) => {
     return res;
 }
 
+const removeNumerationSubstring = (str) => {
+    let numerationSubstringRegExp = /^\d+\s*[\)\]]?\s*[\.\-\,\:]\s*/gm;
+    let res = str.replace(numerationSubstringRegExp, '');
+    return res;
+}
+
+export const removeYearSubstring = (str) => {
+    let yearSubstringRegExp = /\s*[\(\[]?\s*\d{4}\s*[\)\]]?\s*$/gm;
+    let yearStr = str.match(yearSubstringRegExp)?.[0] || '';
+
+    let year = Number.parseInt(yearStr?.match('\\d+')?.[0] || '');
+    let res = str;
+    let parts = str.split(/\s+/g);
+
+    let touchesStart = (str.indexOf(yearStr) == 0);
+    let touchesEnd = (str.indexOf(yearStr) + yearStr.length) == str.length;
+
+    let yearIsNamingPart = (parts.length <= 2 && parts.some(item=>['the'].includes(item)));
+    if(
+        (year > 1000) && 
+        (year < (new Date()).getFullYear() + 1) &&
+        (touchesStart || touchesEnd) &&
+        parts.length > 2 && 
+        !yearIsNamingPart
+    ){
+        res = str.replace(yearSubstringRegExp, '');
+    }
+    
+    return res;
+}
+
+
 export const clearTrackString = (source) => {
     let result = decodeHtml(source);
     result = deburr(result);
+    result = removeNumerationSubstring(result);
     result = removeAlbumSubstring(result)
     result = result
         .replace(regExpPatterns.bracketsContent, '')
