@@ -4,15 +4,6 @@ import { getNestedValue } from '../../utils/js-utils';
 const EVENT_TYPES = ['play', 'pause', 'stop', 'playing'];
 const activeAudios = new Set();
 
-function cleanupAudios(currentAudio) {
-    activeAudios.forEach(audio => {
-        if (audio !== currentAudio && audio.parentNode) {
-            audio.remove();
-            activeAudios.delete(audio);
-        }
-    });
-}
-
 const getCurrentAudio = () => {
     let currentAudioElement = null;
     //old vk:
@@ -49,21 +40,11 @@ window.Audio = function (src) {
 
     document.head.appendChild(audio);
 
-    audio.addEventListener('play', () => {
-        cleanupAudios(audio);
-    });
-
-    audio.addEventListener('playing', () => {
-        cleanupAudios(audio);
-    });
-
     EVENT_TYPES.forEach(eventName => {
         audio.addEventListener(eventName, function (event) {
             const currentAudio = getCurrentAudio();
 
             if (currentAudio === event.target) {
-                cleanupAudios(currentAudio);
-
                 postMessage(event.type, currentAudio.id);
             }
         });
@@ -73,8 +54,6 @@ window.Audio = function (src) {
         const currentAudio = getCurrentAudio();
 
         if (currentAudio === event.target) {
-            cleanupAudios(currentAudio);
-
             const now = Date.now();
             const diff = now - prevTimestampOfTimeupdate;
 
